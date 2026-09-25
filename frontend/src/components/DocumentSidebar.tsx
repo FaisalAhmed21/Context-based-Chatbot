@@ -36,24 +36,20 @@ export function DocumentSidebar({
 
   return (
     <aside className="flex h-full flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-          Knowledge base
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+        <h2 className="text-sm font-semibold tracking-wide text-slate-700">
+          Your Files
         </h2>
         {readyCount > 1 && (
           <button
             type="button"
             onClick={onSelectAllReady}
-            className="text-[10px] font-medium text-teal-800 hover:underline"
+            className="text-[10px] font-medium text-blue-600 hover:underline"
           >
-            Scope all ready
+            Select all
           </button>
         )}
       </div>
-      <p className="text-[11px] leading-snug text-stone-500">
-        Check docs to include in chat. Click a name to preview. Re-index updates vectors
-        without retraining.
-      </p>
       <ul className="space-y-2 overflow-y-auto">
         {documents.length === 0 && (
           <li className="text-sm text-stone-500">No uploads yet.</li>
@@ -67,58 +63,57 @@ export function DocumentSidebar({
               <div
                 className={`group rounded-xl border px-3 py-2 transition ${
                   viewing
-                    ? "border-teal-700 bg-teal-50"
+                    ? "border-blue-400 bg-blue-50/50"
                     : inScope
-                      ? "border-teal-600/40 bg-white"
-                      : "border-stone-200 bg-white/70 hover:border-stone-300"
+                      ? "border-blue-300 bg-white"
+                      : "border-slate-200 bg-slate-50/50 hover:border-slate-300"
                 }`}
               >
                 <div className="flex items-start gap-2">
                   <input
                     type="checkbox"
-                    className="mt-1 accent-teal-800"
+                    className="mt-1 accent-blue-600"
                     checked={inScope}
                     disabled={!ready}
                     onChange={() => onToggleScope(d.id)}
-                    title={ready ? "Include in chat scope" : "Wait until ready"}
+                    title={ready ? "Include in chat" : "Wait until ready"}
                   />
                   <button
                     type="button"
                     className="min-w-0 flex-1 text-left"
                     onClick={() => onView(d.id)}
                   >
-                    <p className="truncate text-sm font-medium text-stone-900">
+                    <p className="truncate text-sm font-medium text-slate-800">
                       {d.filename}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-stone-500">
+                    <p className="mt-0.5 text-[11px] text-slate-500">
                       {STATUS_LABEL[d.status] || d.status}
                       {d.page_count != null ? ` · ${d.page_count} pages` : ""}
-                      {d.chunk_count != null ? ` · ${d.chunk_count} chunks` : ""}
-                      {inScope ? " · in chat" : ""}
+                      {inScope ? " · selected" : ""}
                     </p>
                     {d.status === "failed" && d.error_message && (
-                      <p className="mt-1 line-clamp-2 text-[11px] text-red-700">
+                      <p className="mt-1 line-clamp-2 text-[11px] text-red-600">
                         {d.error_message}
                       </p>
                     )}
                   </button>
                 </div>
-                <div className="mt-1 flex gap-3 opacity-0 transition group-hover:opacity-100">
+                <div className="mt-1 flex gap-3 opacity-0 transition group-hover:opacity-100 pl-6">
                   {onReingest && (ready || d.status === "failed") && (
                     <button
                       type="button"
                       onClick={() => onReingest(d.id)}
-                      className="text-[11px] text-stone-500 hover:text-teal-800"
+                      className="text-[11px] font-medium text-slate-500 hover:text-blue-700"
                     >
-                      Re-index
+                      Retry
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => onDelete(d.id)}
-                    className="text-[11px] text-stone-400 hover:text-red-700"
+                    className="text-[11px] font-medium text-slate-400 hover:text-red-600"
                   >
-                    Remove
+                    Delete
                   </button>
                 </div>
               </div>

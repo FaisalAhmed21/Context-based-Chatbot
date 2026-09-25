@@ -82,19 +82,18 @@ export function UploadZone({ onUploaded }: Props) {
           if (file) void handleFile(file);
         }}
         disabled={busy}
-        className={`w-full rounded-xl border border-dashed px-6 py-8 text-left transition ${
+        className={`w-full rounded-xl border border-dashed px-6 py-8 text-left transition flex flex-col items-center justify-center text-center ${
           dragging
-            ? "border-teal-600 bg-teal-50/80"
-            : "border-stone-300 bg-white/60 hover:border-teal-500 hover:bg-white"
+            ? "border-blue-400 bg-blue-50/80"
+            : "border-slate-300 bg-slate-50/50 hover:border-blue-400 hover:bg-slate-50"
         } disabled:opacity-60`}
       >
-        <p className="font-display text-lg text-stone-900">Drop knowledge here</p>
-        <p className="mt-1 max-w-sm text-sm text-stone-600">
-          PDF · image · video/audio (Whisper) · text. Parsed, chunked, and embedded
-          into the same RAG pipeline.
+        <p className="font-display text-lg font-medium text-slate-800">Upload Document</p>
+        <p className="mt-2 max-w-sm text-sm text-slate-500">
+          Drop a PDF, image, video, audio, or text file here.
         </p>
         {busy && (
-          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-teal-800">
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-blue-600">
             Uploading…
           </p>
         )}
@@ -118,7 +117,7 @@ export function UploadZone({ onUploaded }: Props) {
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Or paste a web page URL…"
           disabled={busy}
-          className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600"
+          className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
           onKeyDown={(e) => {
             if (e.key === "Enter") void handleUrl();
           }}
@@ -127,16 +126,13 @@ export function UploadZone({ onUploaded }: Props) {
           type="button"
           disabled={busy || !url.trim()}
           onClick={() => void handleUrl()}
-          className="rounded-lg bg-stone-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-40"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-40 transition-colors"
         >
           Add
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      <p className="text-[11px] text-stone-500">
-        Ingestion stages: {STAGES.join(" → ")}
-      </p>
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

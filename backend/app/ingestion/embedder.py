@@ -51,7 +51,7 @@ async def _embed_gemini(texts: list[str]) -> list[list[float]]:
 
     model = settings.embedding_model
     if model.startswith("BAAI/") or "bge" in model.lower():
-        model = "text-embedding-004"
+        model = "gemini-embedding-2"
 
     out: list[list[float]] = []
     async with httpx.AsyncClient(timeout=60.0) as client:
