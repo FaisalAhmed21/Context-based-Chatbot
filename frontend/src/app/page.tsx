@@ -428,7 +428,7 @@ export default function HomePage() {
 
         {!needsGoogle && (
           <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[260px_1fr_1fr] lg:gap-6 lg:h-[calc(100vh-180px)]">
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur flex flex-col min-h-0">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur flex flex-col min-h-0 min-w-0">
               <UploadZone
                 onUploaded={(doc) => {
                   setDocuments((prev) => [doc, ...prev.filter((d) => d.id !== doc.id)]);
@@ -475,7 +475,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="min-h-[360px] lg:min-h-0 flex flex-col">
+            <div className="min-h-[360px] lg:min-h-0 flex flex-col min-w-0">
               <PDFViewer
                 documentId={viewer?.id || null}
                 filename={viewer?.filename || null}
@@ -489,7 +489,7 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="flex flex-col min-h-[420px] lg:min-h-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-semibold tracking-wide text-slate-700">
                   Chat
