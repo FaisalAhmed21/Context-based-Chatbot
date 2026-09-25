@@ -12,6 +12,8 @@ services:
       # Auto-connects to the Postgres DB defined below
       - key: POSTGRES_DB
         value: ragchatbot
+      - key: BACKEND_CORS_ORIGINS
+        value: "*"
       - key: POSTGRES_USER
         fromDatabase:
           name: grounded-db
