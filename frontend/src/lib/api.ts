@@ -344,6 +344,6 @@ export function getStoredApiKey(): string {
   return "";
 }
 
-export function setStoredApiKey(_key: string): void {
+export function setStoredApiKey(): void {
 
 }
