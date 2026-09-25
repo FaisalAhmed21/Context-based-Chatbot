@@ -4,7 +4,7 @@ services:
     name: grounded-backend
     env: docker
     rootDir: backend
-    plan: starter
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: PORT
@@ -38,7 +38,7 @@ services:
     name: grounded-frontend
     env: docker
     rootDir: frontend
-    plan: starter
+    plan: free
     envVars:
       - key: PORT
         value: 3000
@@ -51,4 +51,4 @@ databases:
   # 3. The PostgreSQL Database
   - name: grounded-db
     databaseName: ragchatbot
-    plan: starter
+    plan: free
