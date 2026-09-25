@@ -334,42 +334,21 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_10%_-10%,#99f6e4_0%,transparent_55%),radial-gradient(900px_500px_at_90%_0%,#fed7aa_0%,transparent_50%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
+    <div className="relative min-h-screen overflow-hidden bg-slate-50">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
 
       <div className="relative mx-auto flex min-h-screen max-w-[1400px] flex-col gap-6 px-4 py-6 md:px-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-display text-4xl tracking-tight text-stone-900 md:text-5xl">
-              Grounded
+            <p className="font-display text-4xl tracking-tight text-slate-800 md:text-5xl font-semibold">
+              Assistant
             </p>
-            <p className="mt-1 max-w-xl text-sm text-stone-600">
-              Multimodal RAG with hybrid retrieval, GraphRAG expand, citations, and
-              honest refusal when the knowledge base doesn&apos;t contain the answer.
+            <p className="mt-2 max-w-xl text-sm text-slate-500">
+              Upload your documents and chat with them instantly. I can read PDFs, images, and text to help you find answers.
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <p className="rounded-full border border-stone-300 bg-white/70 px-3 py-1 text-[11px] uppercase tracking-wide text-stone-600">
-              Whisper · GraphRAG · grounded refusal
-            </p>
-            {evalSummary && evalSummary.total_gate_events > 0 && (
-              <p className="text-[11px] text-stone-500">
-                Gate events: {evalSummary.total_gate_events}
-                {evalSummary.by_gate.relevance
-                  ? ` · relevance ${evalSummary.by_gate.relevance}`
-                  : ""}
-                {evalSummary.by_gate.groundedness
-                  ? ` · groundedness ${evalSummary.by_gate.groundedness}`
-                  : ""}
-                {evalSummary.suggested_relevance_threshold != null
-                  ? ` · suggest thr ${evalSummary.suggested_relevance_threshold}`
-                  : ""}
-              </p>
-            )}
-            {evalNote && (
-              <p className="max-w-xs text-right text-[11px] text-teal-900">{evalNote}</p>
-            )}
             <div className="flex flex-wrap items-center justify-end gap-2">
               {authEnabled && signedIn && (
                 <>
@@ -402,29 +381,6 @@ export default function HomePage() {
                   Set GOOGLE_CLIENT_ID on the backend (and NEXT_PUBLIC_GOOGLE_CLIENT_ID).
                 </p>
               )}
-              {!authEnabled && (
-                <span className="text-[10px] text-stone-500">Auth off (local)</span>
-              )}
-              {signedIn || !authEnabled ? (
-                <>
-                  <button
-                    type="button"
-                    disabled={evalBusy || scopeReady.length === 0}
-                    onClick={() => void onRunEval()}
-                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-[11px] text-stone-700 hover:border-teal-600 disabled:opacity-40"
-                  >
-                    Run eval
-                  </button>
-                  <button
-                    type="button"
-                    disabled={evalBusy || scopeReady.length === 0}
-                    onClick={() => void onTune()}
-                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-[11px] text-stone-700 hover:border-teal-600 disabled:opacity-40"
-                  >
-                    Tune threshold
-                  </button>
-                </>
-              ) : null}
             </div>
           </div>
         </header>
@@ -471,8 +427,8 @@ export default function HomePage() {
         )}
 
         {!needsGoogle && (
-          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[240px_1fr_1fr] lg:gap-6">
-            <div className="rounded-2xl border border-stone-200 bg-white/70 p-4 backdrop-blur">
+          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[260px_1fr_1fr] lg:gap-6">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
               <UploadZone
                 onUploaded={(doc) => {
                   setDocuments((prev) => [doc, ...prev.filter((d) => d.id !== doc.id)]);
@@ -533,13 +489,10 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="flex min-h-[420px] flex-col rounded-2xl border border-stone-200 bg-white/80 p-4 backdrop-blur lg:min-h-[640px]">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            <div className="flex min-h-[420px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:min-h-[640px]">
+              <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-semibold tracking-wide text-slate-700">
                   Chat
-                  {scopeReady.length > 0
-                    ? ` · ${scopeReady.length} doc${scopeReady.length > 1 ? "s" : ""}`
-                    : ""}
                 </h2>
 
                 {sessions.length > 0 && (
