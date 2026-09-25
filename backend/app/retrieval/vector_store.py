@@ -35,7 +35,17 @@ def ensure_collection(dim: int | None = None) -> None:
     dim = dim or settings.embedding_dim
     name = settings.qdrant_collection
     if client.collection_exists(name):
-        return
+        try:
+            info = client.get_collection(name)
+            existing_dim = info.config.params.vectors.size
+            if existing_dim == dim:
+                return
+            logger.warning("Recreating collection %s (dim %s -> %s)", name, existing_dim, dim)
+            client.delete_collection(name)
+        except Exception as e:
+            logger.warning("Failed to check collection info: %s", e)
+            return
+
     client.create_collection(
         collection_name=name,
         vectors_config=qm.VectorParams(size=dim, distance=qm.Distance.COSINE),
