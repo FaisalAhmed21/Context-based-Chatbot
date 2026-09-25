@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Grounded PDF QA chatbot — FastAPI backend"
 requires-python = ">=3.10"
 dependencies = [
-  "fastapi>=0.115.0",
+  "fastapi[standard]>=0.115.0",
   "uvicorn[standard]>=0.32.0",
   "python-multipart>=0.0.12",
   "sqlalchemy[asyncio]>=2.0.36",
@@ -20,14 +20,13 @@ dependencies = [
   "fastembed>=0.5.0",
   "google-auth>=2.35.0",
   "PyJWT>=2.9.0",
+  "pymupdf4llm>=0.0.17",
+  "pymupdf>=1.25.0",
 ]
 
 [project.optional-dependencies]
 # PDF parsing (Phase 0+)
-ingestion = [
-  "pymupdf4llm>=0.0.17",
-  "pymupdf>=1.25.0",
-]
+ingestion = []
 # Phase 2+ (Docling optional — heavy; pymupdf4llm is the default parser)
 advanced = [
   "docling>=2.15.0",
