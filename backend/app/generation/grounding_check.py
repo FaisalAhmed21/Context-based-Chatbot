@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 _GROUNDED_RE = re.compile(r"\bGROUNDED\b", re.I)
 _UNGROUNDED_RE = re.compile(r"\bUNGROUNDED\b", re.I)
 
-_CHECK_SYSTEM = 
+_CHECK_SYSTEM = """You are a strict grading evaluator. Check if the ANSWER is completely supported by the CONTEXT. If the answer contains any information not present in the context, output UNGROUNDED. Otherwise output GROUNDED. Only output one word: GROUNDED or UNGROUNDED."""
 
 def relevance_gate(chunks: list[RetrievedChunk]) -> GenerationResult | None:
 

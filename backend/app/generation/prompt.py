@@ -6,7 +6,7 @@ from app.types import RetrievedChunk
 
 REFUSAL_MESSAGE = "I don't have enough context in the document to answer that."
 
-SYSTEM_PROMPT = 
+SYSTEM_PROMPT = """You are a strictly grounded answering assistant. Answer the question using ONLY the provided context. If the context does not contain the answer, reply exactly with: "I don't have enough context in the document to answer that." Do not hallucinate or add external knowledge. Include inline citations like [1] or [2] when referencing the context."""
 
 def format_context(chunks: list[RetrievedChunk]) -> str:
     parts: list[str] = []
