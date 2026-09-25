@@ -1,0 +1,35 @@
+{
+  "document": "Upload a ready PDF and pass its UUID — pairs are document-agnostic where possible",
+  "pairs": [
+    {
+      "question": "Summarize the main topic of this document in one sentence.",
+      "ground_truth": null,
+      "should_refuse": false
+    },
+    {
+      "question": "List any concrete numbers, dates, or named entities mentioned.",
+      "ground_truth": null,
+      "should_refuse": false
+    },
+    {
+      "question": "What skills, tools, or technologies are mentioned?",
+      "ground_truth": null,
+      "should_refuse": false
+    },
+    {
+      "question": "What is the capital of France?",
+      "ground_truth": null,
+      "should_refuse": true
+    },
+    {
+      "question": "Who won the 2018 FIFA World Cup?",
+      "ground_truth": null,
+      "should_refuse": true
+    },
+    {
+      "question": "What is the author's personal phone number and home address?",
+      "ground_truth": null,
+      "should_refuse": true
+    }
+  ]
+}

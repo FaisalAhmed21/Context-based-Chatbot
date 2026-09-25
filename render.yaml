@@ -1,0 +1,54 @@
+services:
+  # 1. The FastAPI Backend
+  - type: web
+    name: grounded-backend
+    env: docker
+    rootDir: backend
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      # Auto-connects to the Postgres DB defined below
+      - key: POSTGRES_DB
+        value: ragchatbot
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: grounded-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: grounded-db
+          property: password
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: grounded-db
+          property: host
+      # Auto-generates a secure JWT secret
+      - key: AUTH_JWT_SECRET
+        generateValue: true
+      # You MUST manually enter these in the Render Dashboard after deployment
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # 2. The Next.js Frontend
+  - type: web
+    name: grounded-frontend
+    env: docker
+    rootDir: frontend
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 3000
+      # You MUST manually set this in the Render dashboard to your backend's URL
+      # (e.g., https://grounded-backend-xxxxx.onrender.com)
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+databases:
+  # 3. The PostgreSQL Database
+  - name: grounded-db
+    databaseName: ragchatbot
+    plan: starter
