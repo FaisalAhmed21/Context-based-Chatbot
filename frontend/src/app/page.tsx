@@ -349,17 +349,17 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50">
+    <div className="relative h-screen w-screen overflow-hidden bg-slate-50 flex flex-col">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/60 via-stone-100/50 to-orange-50/40" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.03] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8">
-        <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="relative mx-auto flex h-full w-full max-w-[1600px] flex-col gap-4 px-4 py-4 md:px-6 md:py-6 overflow-hidden">
+        <header className="flex shrink-0 flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-[#8B5E4B] to-[#6E4839] bg-clip-text text-transparent drop-shadow-sm">
               OmniCentricBot
             </h1>
-            <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium">
+            <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium hidden md:block">
               Upload your documents and chat instantly. I can read PDFs, images, and text to help you find answers with perfect accuracy.
             </p>
           </div>
@@ -390,13 +390,13 @@ export default function HomePage() {
         </header>
 
         {bootError && (
-          <div className="rounded-xl border border-[#EAD8D0] bg-[#F9F5F3] px-4 py-3 text-sm text-[#75554B]">
+          <div className="shrink-0 rounded-xl border border-[#EAD8D0] bg-[#F9F5F3] px-4 py-3 text-sm text-[#75554B]">
             {bootError}
           </div>
         )}
 
         {needsGoogle && (
-          <div className="rounded-2xl border border-stone-200 bg-white/90 px-6 py-12 text-center shadow-sm max-w-md mx-auto mt-20">
+          <div className="shrink-0 rounded-2xl border border-stone-200 bg-white/90 px-6 py-12 text-center shadow-sm max-w-md mx-auto mt-20">
             <h2 className="font-display text-2xl text-stone-800 mb-6">Welcome to OmniCentricBot</h2>
             
             <div className="flex justify-center">
@@ -415,14 +415,14 @@ export default function HomePage() {
         )}
 
         {!needsGoogle && scopeReady.length > 1 && (
-          <p className="rounded-xl border border-teal-200 bg-teal-50/80 px-4 py-2 text-xs text-teal-900">
+          <p className="shrink-0 rounded-xl border border-teal-200 bg-teal-50/80 px-4 py-2 text-xs text-teal-900">
             Chat scoped to {scopeReady.length} documents — answers can cite across them.
           </p>
         )}
 
         {!needsGoogle && (
-          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[260px_1fr_1fr] lg:gap-6 lg:h-[calc(100vh-180px)]">
-            <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl flex flex-col min-h-0 min-w-0 overflow-y-auto custom-scrollbar">
+          <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[240px_1fr_1fr] lg:grid-cols-[260px_1fr_1fr] xl:grid-cols-[280px_minmax(0,1.2fr)_minmax(0,1fr)]">
+            <div className="rounded-3xl border border-white/60 bg-white/70 p-4 lg:p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl flex flex-col min-h-0 min-w-0">
               <UploadZone
                 onUploaded={(doc) => {
                   setDocuments((prev) => [doc, ...prev.filter((d) => d.id !== doc.id)]);
