@@ -353,7 +353,7 @@ export default function HomePage() {
               {authEnabled && signedIn && (
                 <>
                   {authPicture && (
-
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={authPicture}
                       alt=""
@@ -370,17 +370,6 @@ export default function HomePage() {
                   </button>
                 </>
               )}
-              {authEnabled && !signedIn && googleClientId && (
-                <GoogleSignInButton
-                  clientId={googleClientId}
-                  onCredential={onGoogleCredential}
-                />
-              )}
-              {authEnabled && !signedIn && !googleClientId && (
-                <p className="max-w-[220px] text-right text-[11px] text-[#A07A6C]">
-                  Set GOOGLE_CLIENT_ID on the backend (and NEXT_PUBLIC_GOOGLE_CLIENT_ID).
-                </p>
-              )}
             </div>
           </div>
         </header>
@@ -392,13 +381,10 @@ export default function HomePage() {
         )}
 
         {needsGoogle && (
-          <div className="rounded-2xl border border-stone-200 bg-white/90 px-6 py-12 text-center shadow-sm">
-            <p className="font-display text-2xl text-white">Sign in to continue</p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-stone-600">
-              Grounded uses Google Sign-In only — no passwords or API keys. Your
-              documents stay scoped to your account.
-            </p>
-            <div className="mt-6 flex justify-center">
+          <div className="rounded-2xl border border-stone-200 bg-white/90 px-6 py-12 text-center shadow-sm max-w-md mx-auto mt-20">
+            <h2 className="font-display text-2xl text-stone-800 mb-6">Welcome to OmniCentricBot</h2>
+            
+            <div className="flex justify-center">
               {googleClientId ? (
                 <GoogleSignInButton
                   clientId={googleClientId}
@@ -406,17 +392,10 @@ export default function HomePage() {
                 />
               ) : (
                 <p className="max-w-sm text-sm text-[#8A665A]">
-                  Missing Google Client ID. Follow{" "}
-                  <span className="font-medium">docs/GOOGLE_AUTH.md</span> — set
-                  GOOGLE_CLIENT_ID in backend/.env and NEXT_PUBLIC_GOOGLE_CLIENT_ID
-                  in frontend/.env.local, then restart both servers.
+                  Authentication is enabled but Google Client ID is missing.
                 </p>
               )}
             </div>
-            <p className="mx-auto mt-6 max-w-md text-[11px] leading-relaxed text-stone-500">
-              Tip: in Google Cloud, add the exact origin from your browser bar
-              (e.g. http://localhost:3000) under Authorized JavaScript origins.
-            </p>
           </div>
         )}
 
