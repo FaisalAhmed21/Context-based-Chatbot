@@ -204,6 +204,12 @@ export default function HomePage() {
       setAuthPicture(res.user.picture || null);
       setSignedIn(true);
       setBootError(null);
+      
+      setMessages([]);
+      setSessionId(null);
+      setScopeIds([]);
+      setViewerId(null);
+      
       await refresh();
     } catch (e) {
       setBootError(e instanceof Error ? e.message : "Google sign-in failed");
