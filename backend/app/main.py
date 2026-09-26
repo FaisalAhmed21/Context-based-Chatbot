@@ -75,7 +75,7 @@ app = FastAPI(
         "3. **Create** a chat session scoped to your document IDs using `/chat/sessions`.\n"
         "4. **Stream** responses using `/chat/{session_id}/message`.\n\n"
     ),
-    version="",
+    version="latest",
     openapi_version="3.0.0",
     openapi_tags=tags_metadata,
     lifespan=lifespan,
