@@ -364,7 +364,18 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <a
+                href={process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/docs` : "https://context-based-chatbot.fastapicloud.dev/docs"}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-stone-100 to-stone-200 border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:from-white hover:to-stone-100 hover:border-teal-600 hover:text-teal-800 transition-all duration-200"
+              >
+                <svg className="w-3.5 h-3.5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                Developer API
+              </a>
               {authEnabled && signedIn && (
                 <>
                   {authPicture && (
@@ -539,19 +550,6 @@ export default function HomePage() {
               />
             </div>
           </div>
-        )}
-
-        <p className="pb-4 text-center text-[11px] text-stone-500">
-          API docs:{" "}
-          <a
-            className="text-teal-800 underline"
-            href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/docs`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            /docs
-          </a>
-        </p>
       </div>
     </div>
   );
