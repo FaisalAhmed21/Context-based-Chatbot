@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Outfit({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
-const sans = Manrope({
+const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   weight: ["400", "500", "600", "700"],
