@@ -53,9 +53,9 @@ export function CitationList({ citations, onClick }: Props) {
               type="button"
               title={c.snippet || "Jump to source"}
               onClick={() => onClick?.(c)}
-              className="group max-w-full rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-left text-xs text-stone-700 transition hover:border-teal-600 hover:bg-teal-50 hover:text-teal-950"
+              className="group max-w-full rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-left text-xs text-stone-700 transition hover:border-amber-500 hover:bg-amber-50 hover:text-amber-950"
             >
-              <span className="font-medium text-teal-800 group-hover:underline">
+              <span className="font-medium text-amber-800 group-hover:underline">
                 {pageLabel}
               </span>
               {section && <span className="text-stone-500">{section}</span>}

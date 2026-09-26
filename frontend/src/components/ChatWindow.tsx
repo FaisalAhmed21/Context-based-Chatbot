@@ -30,7 +30,7 @@ export function ChatWindow({
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2">
         {messages.length === 0 && (
-          <p className="rounded-lg bg-blue-50/50 px-4 py-3 text-sm text-slate-600">
+          <p className="rounded-lg bg-amber-50/50 px-4 py-3 text-sm text-stone-600">
             Hello! I'm ready to answer any questions about your uploaded documents.
           </p>
         )}
@@ -42,10 +42,10 @@ export function ChatWindow({
             <div
               className={`max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 m.role === "user"
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-amber-600 text-white shadow-sm"
                   : m.refused
                     ? "border border-amber-200 bg-amber-50 text-amber-900"
-                    : "border border-slate-200 bg-white text-slate-800 shadow-sm"
+                    : "border border-stone-200 bg-white text-stone-800 shadow-sm"
               }`}
             >
               {m.refused && (
@@ -57,7 +57,7 @@ export function ChatWindow({
                 i === messages.length - 1 &&
                 m.role === "assistant" &&
                 m.content === "Thinking…" && (
-                  <span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-teal-600" />
+                  <span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
                 )}
               <p className="whitespace-pre-wrap">{m.content}</p>
               {!!m.citations?.length && (
@@ -89,12 +89,12 @@ export function ChatWindow({
           placeholder={
             disabled ? "Upload & wait for Ready…" : "Ask a question…"
           }
-          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white transition-colors disabled:opacity-50"
+          className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-amber-500 focus:bg-white transition-colors disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={disabled || streaming || !draft.trim()}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40 transition-colors shadow-sm"
+          className="rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-40 transition-colors shadow-sm"
         >
           Send
         </button>

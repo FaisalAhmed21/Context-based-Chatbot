@@ -36,15 +36,15 @@ export function DocumentSidebar({
 
   return (
     <aside className="flex h-full flex-col gap-3">
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-        <h2 className="text-sm font-semibold tracking-wide text-slate-700">
+      <div className="flex items-center justify-between gap-2 border-b border-stone-200/50 pb-2">
+        <h2 className="text-sm font-semibold tracking-wide text-stone-700">
           Your Files
         </h2>
         {readyCount > 1 && (
           <button
             type="button"
             onClick={onSelectAllReady}
-            className="text-[10px] font-medium text-blue-600 hover:underline"
+            className="text-[10px] font-medium text-amber-700 hover:underline"
           >
             Select all
           </button>
@@ -63,16 +63,16 @@ export function DocumentSidebar({
               <div
                 className={`group rounded-xl border px-3 py-2 transition ${
                   viewing
-                    ? "border-blue-400 bg-blue-50/50"
+                    ? "border-amber-400 bg-amber-50/50"
                     : inScope
-                      ? "border-blue-300 bg-white"
-                      : "border-slate-200 bg-slate-50/50 hover:border-slate-300"
+                      ? "border-amber-300 bg-white"
+                      : "border-stone-200 bg-stone-50/50 hover:border-stone-300"
                 }`}
               >
                 <div className="flex items-start gap-2">
                   <input
                     type="checkbox"
-                    className="mt-1 accent-blue-600"
+                    className="mt-1 accent-amber-600"
                     checked={inScope}
                     disabled={!ready}
                     onChange={() => onToggleScope(d.id)}
@@ -83,10 +83,10 @@ export function DocumentSidebar({
                     className="min-w-0 flex-1 text-left"
                     onClick={() => onView(d.id)}
                   >
-                    <p className="truncate text-sm font-medium text-slate-800">
+                    <p className="truncate text-sm font-medium text-stone-800">
                       {d.filename}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">
+                    <p className="mt-0.5 text-[11px] text-stone-500">
                       {STATUS_LABEL[d.status] || d.status}
                       {d.page_count != null ? ` · ${d.page_count} pages` : ""}
                       {inScope ? " · selected" : ""}
@@ -103,7 +103,7 @@ export function DocumentSidebar({
                     <button
                       type="button"
                       onClick={() => onReingest(d.id)}
-                      className="text-[11px] font-medium text-slate-500 hover:text-blue-700"
+                      className="text-[11px] font-medium text-stone-500 hover:text-amber-800"
                     >
                       Retry
                     </button>
@@ -111,7 +111,7 @@ export function DocumentSidebar({
                   <button
                     type="button"
                     onClick={() => onDelete(d.id)}
-                    className="text-[11px] font-medium text-slate-400 hover:text-red-600"
+                    className="text-[11px] font-medium text-stone-400 hover:text-red-600"
                   >
                     Delete
                   </button>
