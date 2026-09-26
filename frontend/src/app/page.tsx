@@ -13,6 +13,7 @@ import {
   clearSession,
   createSession,
   deleteDocument,
+  deleteSession,
   getAuthConfig,
   getAuthMe,
   getDocumentStatus,
@@ -490,22 +491,39 @@ export default function HomePage() {
                 </h2>
 
                 {sessions.length > 0 && (
-                  <select
-                    className="rounded border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-600 outline-none"
-                    value={sessionId || ""}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        loadSession(e.target.value);
-                      }
-                    }}
-                  >
-                    <option value="" disabled>Recent chats...</option>
-                    {sessions.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {new Date(s.created_at).toLocaleDateString()} - {s.title || "Chat"} ({s.document_ids?.length || 0} docs)
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="rounded border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-600 outline-none"
+                      value={sessionId || ""}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          loadSession(e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="" disabled>Recent chats...</option>
+                      {sessions.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {new Date(s.created_at).toLocaleDateString()} - {s.title || "Chat"} ({s.document_ids?.length || 0} docs)
+                        </option>
+                      ))}
+                    </select>
+                    {sessionId && (
+                      <button
+                        onClick={async () => {
+                          if (confirm("Delete this chat?")) {
+                            await deleteSession(sessionId);
+                            setSessionId(null);
+                            setMessages([]);
+                            await refresh();
+                          }
+                        }}
+                        className="rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-600 hover:bg-red-100"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
               <ChatWindow

@@ -347,3 +347,12 @@ export function getStoredApiKey(): string {
 export function setStoredApiKey(): void {
 
 }
+
+export async function deleteSession(id: string): Promise<void> {
+  await handle(
+    await fetch(`/chat/`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    })
+  );
+}

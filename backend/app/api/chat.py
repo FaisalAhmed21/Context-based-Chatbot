@@ -206,3 +206,19 @@ async def chat_history(
             )
         )
     return out
+
+@router.delete('/{session_id}')
+async def delete_session(
+    session_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: AuthUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail='Session not found')
+    if user.id is not None and session.user_id is not None and session.user_id != user.id:
+        raise HTTPException(status_code=404, detail='Session not found')
+    await db.delete(session)
+    await db.commit()
+    return {'status': 'deleted'}
