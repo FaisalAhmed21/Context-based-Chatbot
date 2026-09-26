@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatWindow } from "@/components/ChatWindow";
 import { DocumentSidebar } from "@/components/DocumentSidebar";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
