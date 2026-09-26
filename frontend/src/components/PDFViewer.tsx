@@ -307,7 +307,10 @@ export function PDFViewer({
                 </p>
               }
               onLoadSuccess={onLoadSuccess}
-              onLoadError={(err) => setLoadError(err.message || "Failed to load PDF")}
+              onLoadError={(err) => {
+                const msg = err.message || "Failed to load PDF";
+                setLoadError(msg.replace(/[\?&]token=[^"\s]+/g, ""));
+              }}
               error={
                 <p className="rounded border border-[#EAD8D0] bg-[#F9F5F3] px-4 py-3 text-sm text-[#75554B]">
                   {loadError || "Could not load PDF"}
