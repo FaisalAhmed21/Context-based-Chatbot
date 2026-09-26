@@ -17,7 +17,6 @@ dependencies = [
   "sse-starlette>=2.1.0",
   "python-dotenv>=1.0.1",
   "aiofiles>=24.1.0",
-  "fastembed>=0.5.0",
   "google-auth>=2.35.0",
   "PyJWT>=2.9.0",
   "pymupdf4llm>=0.0.17",
@@ -25,19 +24,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# PDF parsing (Phase 0+)
-ingestion = []
-# Phase 2+ (Docling optional — heavy; pymupdf4llm is the default parser)
-advanced = [
-  "docling>=2.15.0",
-  "langchain>=0.3.0",
-  "langchain-community>=0.3.0",
-  "langgraph>=0.2.0",
-]
-eval = [
-  "ragas>=0.2.0",
-  "datasets>=3.0.0",
-]
 dev = [
   "pytest>=8.3.0",
   "pytest-asyncio>=0.24.0",
