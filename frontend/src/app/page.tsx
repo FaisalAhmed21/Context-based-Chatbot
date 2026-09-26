@@ -335,13 +335,13 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/60 via-purple-50/40 to-sky-50/50" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/60 via-stone-100/50 to-orange-50/40" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.03] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
 
       <div className="relative mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">
+            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-amber-800 to-stone-600 bg-clip-text text-transparent drop-shadow-sm">
               OmniCentricBot
             </h1>
             <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium">
@@ -428,7 +428,7 @@ export default function HomePage() {
 
         {!needsGoogle && (
           <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[260px_1fr_1fr] lg:gap-6 lg:h-[calc(100vh-180px)]">
-            <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-indigo-100/50 backdrop-blur-xl flex flex-col min-h-0 min-w-0 overflow-y-auto custom-scrollbar">
+            <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl flex flex-col min-h-0 min-w-0 overflow-y-auto custom-scrollbar">
               <UploadZone
                 onUploaded={(doc) => {
                   setDocuments((prev) => [doc, ...prev.filter((d) => d.id !== doc.id)]);
@@ -438,7 +438,7 @@ export default function HomePage() {
                   );
                 }}
               />
-              <div className="mt-6 h-px bg-indigo-100/50" />
+              <div className="mt-6 h-px bg-stone-200/70" />
               <div className="mt-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
                 <DocumentSidebar
                   documents={documents}
@@ -475,7 +475,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="min-h-[360px] lg:min-h-0 flex flex-col min-w-0 rounded-3xl border border-white/60 bg-white/70 shadow-lg shadow-indigo-100/50 backdrop-blur-xl overflow-hidden">
+            <div className="min-h-[360px] lg:min-h-0 flex flex-col min-w-0 rounded-3xl border border-white/60 bg-white/70 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-hidden">
               <PDFViewer
                 documentId={viewer?.id || null}
                 filename={viewer?.filename || null}
@@ -489,10 +489,10 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-indigo-100/50 backdrop-blur-xl overflow-y-auto custom-scrollbar">
-              <div className="mb-4 flex items-center justify-between border-b border-indigo-100/50 pb-3">
-                <h2 className="text-sm font-bold tracking-wide text-indigo-900 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
+            <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
+              <div className="mb-4 flex items-center justify-between border-b border-stone-200/70 pb-3">
+                <h2 className="text-sm font-bold tracking-wide text-stone-800 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse"></span>
                   OmniCentric Chat
                 </h2>
 
