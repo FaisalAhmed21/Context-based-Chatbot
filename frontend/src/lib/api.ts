@@ -350,7 +350,7 @@ export function setStoredApiKey(): void {
 
 export async function deleteSession(id: string): Promise<void> {
   await handle(
-    await fetch(`/chat/`, {
+    await fetch(`${API_URL}/chat/${id}`, {
       method: 'DELETE',
       headers: authHeaders(),
     })
