@@ -44,7 +44,7 @@ export function DocumentSidebar({
           <button
             type="button"
             onClick={onSelectAllReady}
-            className="text-[10px] font-medium text-amber-700 hover:underline"
+            className="text-[10px] font-medium text-[#A07A6C] hover:underline"
           >
             Select all
           </button>
@@ -63,16 +63,16 @@ export function DocumentSidebar({
               <div
                 className={`group rounded-xl border px-3 py-2 transition ${
                   viewing
-                    ? "border-amber-400 bg-amber-50/50"
+                    ? "border-[#D8B4A0] bg-[#F9F5F3]/50"
                     : inScope
-                      ? "border-amber-300 bg-white"
+                      ? "border-[#EAD8D0] bg-white"
                       : "border-stone-200 bg-stone-50/50 hover:border-stone-300"
                 }`}
               >
                 <div className="flex items-start gap-2">
                   <input
                     type="checkbox"
-                    className="mt-1 accent-amber-600"
+                    className="mt-1 accent-[#C8A28D]"
                     checked={inScope}
                     disabled={!ready}
                     onChange={() => onToggleScope(d.id)}
@@ -103,7 +103,7 @@ export function DocumentSidebar({
                     <button
                       type="button"
                       onClick={() => onReingest(d.id)}
-                      className="text-[11px] font-medium text-stone-500 hover:text-amber-800"
+                      className="text-[11px] font-medium text-stone-500 hover:text-[#A07A6C]"
                     >
                       Retry
                     </button>

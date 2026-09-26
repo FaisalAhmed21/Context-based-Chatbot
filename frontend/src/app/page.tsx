@@ -341,7 +341,7 @@ export default function HomePage() {
       <div className="relative mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-amber-800 to-stone-600 bg-clip-text text-transparent drop-shadow-sm">
+            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-[#B0897B] to-[#9A7B73] bg-clip-text text-transparent drop-shadow-sm">
               OmniCentricBot
             </h1>
             <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium">
@@ -377,7 +377,7 @@ export default function HomePage() {
                 />
               )}
               {authEnabled && !signedIn && !googleClientId && (
-                <p className="max-w-[220px] text-right text-[11px] text-amber-800">
+                <p className="max-w-[220px] text-right text-[11px] text-[#A07A6C]">
                   Set GOOGLE_CLIENT_ID on the backend (and NEXT_PUBLIC_GOOGLE_CLIENT_ID).
                 </p>
               )}
@@ -386,7 +386,7 @@ export default function HomePage() {
         </header>
 
         {bootError && (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <div className="rounded-xl border border-[#EAD8D0] bg-[#F9F5F3] px-4 py-3 text-sm text-[#75554B]">
             {bootError}
           </div>
         )}
@@ -405,7 +405,7 @@ export default function HomePage() {
                   onCredential={onGoogleCredential}
                 />
               ) : (
-                <p className="max-w-sm text-sm text-amber-900">
+                <p className="max-w-sm text-sm text-[#8A665A]">
                   Missing Google Client ID. Follow{" "}
                   <span className="font-medium">docs/GOOGLE_AUTH.md</span> — set
                   GOOGLE_CLIENT_ID in backend/.env and NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -492,7 +492,7 @@ export default function HomePage() {
             <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
               <div className="mb-4 flex items-center justify-between border-b border-stone-200/70 pb-3">
                 <h2 className="text-sm font-bold tracking-wide text-stone-800 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#F9F5F3]0 shadow-[0_0_8px_rgba(216,180,160,0.6)] animate-pulse"></span>
                   OmniCentric Chat
                 </h2>
 

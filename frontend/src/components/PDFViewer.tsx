@@ -239,7 +239,7 @@ export function PDFViewer({
         {fileUrl && imageMode && (
           <div
             className={`relative z-[1] max-w-full transition ${
-              flash ? "ring-2 ring-amber-500 ring-offset-4" : ""
+              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
             }`}
           >
             {}
@@ -254,7 +254,7 @@ export function PDFViewer({
         {fileUrl && videoMode && (
           <div
             className={`relative z-[1] w-full max-w-xl transition ${
-              flash ? "ring-2 ring-amber-500 ring-offset-4" : ""
+              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
             }`}
           >
             {audioOnly ? (
@@ -287,7 +287,7 @@ export function PDFViewer({
             title={filename || "text"}
             src={fileUrl}
             className={`relative z-[1] h-[70vh] w-full max-w-xl rounded border border-stone-200 bg-white shadow-md ${
-              flash ? "ring-2 ring-amber-500 ring-offset-4" : ""
+              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
             }`}
           />
         )}
@@ -296,7 +296,7 @@ export function PDFViewer({
           <div
             ref={pageWrapRef}
             className={`relative z-[1] transition ring-offset-2 ${
-              flash ? "ring-2 ring-amber-500 ring-offset-4" : ""
+              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
             }`}
           >
             <Document
@@ -309,7 +309,7 @@ export function PDFViewer({
               onLoadSuccess={onLoadSuccess}
               onLoadError={(err) => setLoadError(err.message || "Failed to load PDF")}
               error={
-                <p className="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                <p className="rounded border border-[#EAD8D0] bg-[#F9F5F3] px-4 py-3 text-sm text-[#75554B]">
                   {loadError || "Could not load PDF"}
                 </p>
               }
