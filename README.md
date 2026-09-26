@@ -24,12 +24,12 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 16 (React 19), TailwindCSS, React-PDF |
-| **Backend** | FastAPI (Python 3.11+), Uvicorn, SQLAlchemy |
+| **Backend** | FastAPI (Python 3.10+), Uvicorn, SQLAlchemy |
 | **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
 | **Vector DB** | Qdrant (Local on-disk or Cloud) |
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via FastEmbed) |
-| **LLM Engine** | Groq (Llama 3) / Gemini fallback |
+| **LLM Engine** | Groq (GPT-OSS-20B) / Gemini fallback |
 | **Document Parsing**| PyMuPDF4LLM |
 
 ---
