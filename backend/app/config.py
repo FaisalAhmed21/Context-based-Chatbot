@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     llm_provider: str = "groq"
     llm_fallback_provider: str = "gemini"
-    llm_model: str = "llama3-8b-8192"
+    llm_model: str = "openai/gpt-oss-20b"
     llm_fallback_model: str = "gemini-3.6-flash"
 
     embedding_provider: str = "fastembed"
