@@ -9,7 +9,7 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 1. **Strict Context Grounding (Zero Hallucination)**
    Unlike standard LLM chatbots, OmniCentricBot employs strict relevance gating and self-RAG groundedness checks. If the answer isn't in your documents, the bot honestly refuses to guess.
 2. **Multimodal Capabilities**
-   The platform processes far more than just text. It parses complex PDF layouts (via Docling), analyzes images, and scrapes web pages, unifying them into a single queryable vector space.
+   The platform processes far more than just text. It parses complex PDF layouts, analyzes images, and scrapes web pages, unifying them into a single queryable vector space.
 3. **Advanced Hybrid Retrieval Pipeline**
    We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to guarantee high-precision context retrieval.
 4. **Interactive Citation UX**
@@ -23,14 +23,14 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Next.js 15 (React 19), TailwindCSS, React-PDF, Framer Motion |
+| **Frontend** | Next.js 16 (React 19), TailwindCSS, React-PDF |
 | **Backend** | FastAPI (Python 3.11+), Uvicorn, SQLAlchemy |
 | **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
 | **Vector DB** | Qdrant (Local on-disk or Cloud) |
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via FastEmbed) |
 | **LLM Engine** | Groq (Llama 3) / Gemini fallback |
-| **Document Parsing**| PyMuPDF4LLM, Docling (Complex PDFs) |
+| **Document Parsing**| PyMuPDF4LLM |
 
 ---
 
@@ -65,7 +65,7 @@ If you wish to run the project locally for development purposes:
    cd backend
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   pip install -e ".[ingestion]"
+   pip install -e .
    cp ../.env.example .env
    uvicorn app.main:app --reload --port 8000
    ```
