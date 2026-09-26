@@ -349,11 +349,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-slate-50 flex flex-col">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/60 via-stone-100/50 to-orange-50/40" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
+    <div className="relative min-h-[100dvh] md:h-screen w-screen overflow-x-hidden overflow-y-auto md:overflow-hidden bg-slate-50 flex flex-col">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/60 via-stone-100/50 to-orange-50/40" />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.03] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22><rect fill=%22%23000%22 width=%221%22 height=%221%22/></svg>')]" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-[1600px] flex-col gap-4 px-4 py-4 md:px-6 md:py-6 overflow-hidden">
+      <div className="relative mx-auto flex h-full min-h-full w-full max-w-[1600px] flex-col gap-4 px-4 py-4 md:px-6 md:py-6 md:overflow-hidden">
         <header className="flex shrink-0 flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-[#8B5E4B] to-[#6E4839] bg-clip-text text-transparent drop-shadow-sm">
@@ -421,8 +421,8 @@ export default function HomePage() {
         )}
 
         {!needsGoogle && (
-          <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[240px_1fr_1fr] lg:grid-cols-[260px_1fr_1fr] xl:grid-cols-[280px_minmax(0,1.2fr)_minmax(0,1fr)]">
-            <div className="rounded-3xl border border-white/60 bg-white/70 p-4 lg:p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl flex flex-col min-h-0 min-w-0">
+          <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[240px_1fr_1fr] lg:grid-cols-[260px_1fr_1fr] xl:grid-cols-[280px_minmax(0,1.2fr)_minmax(0,1fr)] pb-8 md:pb-0">
+            <div className="rounded-3xl border border-white/60 bg-white/70 p-4 lg:p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl flex flex-col min-h-[400px] md:min-h-0 min-w-0 overflow-y-auto custom-scrollbar">
               <UploadZone
                 onUploaded={(doc) => {
                   setDocuments((prev) => [doc, ...prev.filter((d) => d.id !== doc.id)]);
@@ -469,7 +469,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="min-h-[360px] lg:min-h-0 flex flex-col min-w-0 rounded-3xl border border-white/60 bg-white/70 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-hidden">
+            <div className="min-h-[500px] md:min-h-0 flex flex-col min-w-0 rounded-3xl border border-white/60 bg-white/70 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-hidden">
               <PDFViewer
                 documentId={viewer?.id || null}
                 filename={viewer?.filename || null}
@@ -483,7 +483,7 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
+            <div className="flex flex-col min-h-[600px] md:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-4 lg:p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
               <div className="mb-4 flex items-center justify-between border-b border-stone-200/70 pb-3">
                 <h2 className="text-sm font-bold tracking-wide text-stone-800 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#F9F5F3]0 shadow-[0_0_8px_rgba(184,122,93,0.6)] animate-pulse"></span>
