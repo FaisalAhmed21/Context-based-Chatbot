@@ -2,14 +2,14 @@
 
 Welcome to **OmniCentricBot**, a state-of-the-art Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
 
-This project allows you to build a highly intelligent, multimodal knowledge base by uploading PDFs, images, videos, text files, and web page URLs. The bot strictly answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than hallucinate if the context is insufficient.
+This project allows you to build a highly intelligent, multimodal knowledge base by uploading PDFs, images, text files, and web page URLs. The bot strictly answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than hallucinate if the context is insufficient.
 
-## 🌟 What Makes This Exceptional?
+## What Makes This Exceptional?
 
 1. **Strict Context Grounding (Zero Hallucination)**
    Unlike standard LLM chatbots, OmniCentricBot employs strict relevance gating and self-RAG groundedness checks. If the answer isn't in your documents, the bot honestly refuses to guess.
 2. **Multimodal Capabilities**
-   The platform processes far more than just text. It parses complex PDF layouts (via Docling), analyzes images, transcribes audio/video (via Whisper), and scrapes web pages, unifying them into a single queryable vector space.
+   The platform processes far more than just text. It parses complex PDF layouts (via Docling), analyzes images, and scrapes web pages, unifying them into a single queryable vector space.
 3. **Advanced Hybrid Retrieval Pipeline**
    We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to guarantee high-precision context retrieval.
 4. **Interactive Citation UX**
@@ -19,7 +19,7 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -30,113 +30,73 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via FastEmbed) |
 | **LLM Engine** | Groq (Llama 3) / Gemini fallback |
-| **Document Parsing**| PyMuPDF4LLM, Docling (Complex PDFs), Whisper (Audio) |
+| **Document Parsing**| PyMuPDF4LLM, Docling (Complex PDFs) |
 
 ---
 
-## 🚀 Quick Start Guide (Local Development)
+## Production Deployment (Vercel & FastAPI Cloud)
 
-You can run the entire stack locally without Docker for rapid development.
+This project is fully optimized for serverless and cloud deployments.
 
-### 1. Backend Setup
+### 1. Backend (FastAPI Cloud)
+The backend runs on FastAPI Cloud. 
+- API Base URL: `https://context-based-chatbot.fastapicloud.dev`
+- API Documentation: `https://context-based-chatbot.fastapicloud.dev/docs`
 
-It is highly recommended to use a Python virtual environment to prevent dependency conflicts.
-
-```bash
-cd backend
-python -m venv .venv
-
-# Activate the virtual environment:
-# On Windows:
-.\.venv\Scripts\Activate.ps1
-# On macOS/Linux:
-source .venv/bin/activate
-
-# Install the core backend and ingestion dependencies
-pip install -e ".[ingestion]"
-
-# Duplicate the example environment file
-cp ../.env.example .env
-```
-
-**Environment Configuration (`.env`)**
-Open `.env` and configure your API keys:
+Ensure the backend environment variables are set in your FastAPI Cloud dashboard:
 * `GROQ_API_KEY`: Your Groq API key for the LLM.
-* `AUTH_ENABLED`: Set to `false` for local testing, or `true` if you have configured a `GOOGLE_CLIENT_ID`.
+* `AUTH_ENABLED`: `true`
+* `GOOGLE_CLIENT_ID`: Your Google OAuth client ID.
 
-**Start the Server**
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-Your backend is now running! View the interactive OpenAPI documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
-
-### 2. Frontend Setup
-
-In a new terminal window:
-
-```bash
-cd frontend
-npm install
-```
-
-**Environment Configuration (`.env`)**
-Create a `.env` file in the `frontend` directory if you need to override the API URL or provide a Google Client ID for frontend auth rendering.
-
-**Start the Client**
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+### 2. Frontend (Vercel)
+The frontend is deployed on Vercel. 
+Ensure the following environment variables are set in your Vercel dashboard:
+* `NEXT_PUBLIC_API_URL`: `https://context-based-chatbot.fastapicloud.dev`
+* `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: Your Google OAuth client ID.
 
 ---
 
-## 🔒 Authentication (Google Sign-In)
+## Local Development (Optional)
 
-OmniCentricBot supports optional, secure authentication exclusively via Google Sign-In. No passwords or custom registration flows are required.
+If you wish to run the project locally for development purposes:
 
-To enable authentication:
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create OAuth 2.0 Client credentials.
-2. Add your frontend domain (e.g., `http://localhost:3000`) to the **Authorized JavaScript origins**.
-3. In your backend `.env`, set:
-   ```env
-   AUTH_ENABLED=true
-   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+1. **Backend**:
+   ```bash
+   cd backend
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install -e ".[ingestion]"
+   cp ../.env.example .env
+   uvicorn app.main:app --reload --port 8000
    ```
-4. In your frontend `.env`, set:
-   ```env
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   *(Local API Docs will be available at `http://127.0.0.1:8000/docs`)*
+
+2. **Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
    ```
+   *(Local UI will be available at `http://127.0.0.1:3000`)*
+
+---
+
+## Authentication (Google Sign-In)
+
+OmniCentricBot supports secure authentication exclusively via Google Sign-In. No passwords or custom registration flows are required.
 
 When enabled, documents and chat sessions are strictly scoped to the user who created them.
 
 ---
 
-## 🚢 Production Deployment
+## API Reference
 
-For production, the application is fully containerized. We recommend using Docker Compose with a reverse proxy like Caddy or Nginx for HTTPS.
-
-1. Prepare your production environment file:
-   ```bash
-   cp .env.production.example .env.production
-   ```
-2. Edit `.env.production` to include your domain, secure random secrets, API keys, and Postgres credentials.
-3. Build and launch the stack in detached mode:
-   ```bash
-   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
-   ```
-
-*(Note: FastAPI Cloud and Vercel are also supported out-of-the-box for serverless deployments).*
-
----
-
-## 📡 API Reference
-
-The backend exposes a clean, documented REST API. For full schema details, visit the `/docs` endpoint on your running backend. 
+The backend exposes a clean, documented REST API. For full schema details, visit the `/docs` endpoint on your backend URL. 
 
 ### Core Endpoints
 
 * **Documents**
-  * `POST /documents/upload` - Upload and asynchronously ingest a media file.
+  * `POST /documents/upload` - Upload and asynchronously ingest a media file (PDF, Image, Text).
   * `POST /documents/from-url` - Scrape and ingest a public webpage.
   * `GET /documents` - List all documents in the user's knowledge base.
   * `GET /documents/{id}/file` - Retrieve the original media file.
@@ -153,7 +113,7 @@ The backend exposes a clean, documented REST API. For full schema details, visit
 
 ---
 
-## 🧪 Evaluations & Auto-Tuning
+## Evaluations & Auto-Tuning
 
 OmniCentricBot includes a built-in suite for evaluating RAG performance against held-out datasets (Faithfulness, Context Precision, Refusal Rates).
 
@@ -164,4 +124,5 @@ cd backend
 python -m app.eval.ragas_eval --document-id <UUID>
 
 # Sweep the relevance threshold hyperparameter and get an optimal recommendation
+python -m app.eval.ragas_eval --document-id <UUID> --tune
 ```
