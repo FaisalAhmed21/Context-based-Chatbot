@@ -58,10 +58,10 @@ tags_metadata = [
 ]
 
 app = FastAPI(
-    title="Grounded — Context-Aware Multimodal RAG API",
+    title="OmniCentricBot API",
     description=(
-        "Welcome to the **Grounded** API documentation! 🚀\n\n"
-        "Grounded is a highly precise, context-grounded multimodal RAG (Retrieval-Augmented Generation) "
+        "Welcome to the **OmniCentricBot** API documentation!\n\n"
+        "OmniCentricBot is a highly precise, context-grounded multimodal RAG (Retrieval-Augmented Generation) "
         "chatbot engine. It ensures answers are strictly derived from your uploaded documents (PDFs, Images, "
         "Web Pages) and explicitly refuses to hallucinate when context is insufficient.\n\n"
         "### Key Capabilities\n"
@@ -75,15 +75,14 @@ app = FastAPI(
         "3. **Create** a chat session scoped to your document IDs using `/chat/sessions`.\n"
         "4. **Stream** responses using `/chat/{session_id}/message`.\n\n"
     ),
-    version="1.0.0",
+    version="",
+    openapi_version="3.0.0",
     openapi_tags=tags_metadata,
     lifespan=lifespan,
     contact={
-        "name": "Grounded AI Team",
-        "url": "https://github.com/FaisalAhmed21/Context-based-Chatbot",
-        "email": "support@grounded-rag.dev",
+        "name": "OmniCentricBot Team",
+        "email": "faisal.ahmed.career@gmail.com",
     },
-    license_info={"name": "MIT License", "url": "https://opensource.org/licenses/MIT"},
 )
 
 settings = get_settings()

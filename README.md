@@ -164,11 +164,4 @@ cd backend
 python -m app.eval.ragas_eval --document-id <UUID>
 
 # Sweep the relevance threshold hyperparameter and get an optimal recommendation
-python -m app.eval.ragas_eval --document-id <UUID> --tune
 ```
-
----
-
-## License
-
-This project is licensed under the MIT License.
