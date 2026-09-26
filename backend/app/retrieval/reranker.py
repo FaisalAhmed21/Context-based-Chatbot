@@ -23,7 +23,7 @@ async def rerank(
     query: str,
     candidates: list[RetrievedChunk],
     *,
-    top_n: int = 8,
+    top_n: int = 15,
 ) -> list[RetrievedChunk]:
 
     if not candidates:
