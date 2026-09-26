@@ -10,14 +10,13 @@ type Props = {
 
 const STAGES = ["parsing", "chunking", "embedding", "ready"] as const;
 const ACCEPT =
-  ".pdf,.png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.mov,.mp3,.wav,.m4a,.txt,.md,.markdown,.csv,.html,application/pdf,image/*,video/*,audio/*,text/*";
+  ".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.markdown,.csv,.html,application/pdf,image/*,text/*";
 
 function isAllowed(file: File): boolean {
   const n = file.name.toLowerCase();
   return (
     n.endsWith(".pdf") ||
     /\.(png|jpe?g|webp|gif|bmp)$/.test(n) ||
-    /\.(mp4|webm|mov|mkv|avi|mpeg|mp3|wav|m4a)$/.test(n) ||
     /\.(txt|md|markdown|csv|json|log|html?)$/.test(n)
   );
 }
@@ -32,7 +31,7 @@ export function UploadZone({ onUploaded }: Props) {
   const handleFile = useCallback(
     async (file: File) => {
       if (!isAllowed(file)) {
-        setError("Upload PDF, image, video/audio (≤25MB), or text.");
+        setError("Upload PDF, image, or text file (≤25MB).");
         return;
       }
       setError(null);
@@ -90,7 +89,7 @@ export function UploadZone({ onUploaded }: Props) {
       >
         <p className="font-display text-lg font-medium text-stone-800">Upload Document</p>
         <p className="mt-2 max-w-sm text-sm text-stone-500">
-          Drop a PDF, image, video, audio, or text file here.
+          Drop a PDF, image, or text file here.
         </p>
         {busy && (
           <p className="mt-4 text-xs font-medium uppercase tracking-wide text-[#A07A6C]">
