@@ -16,7 +16,7 @@ from app.db.models import Document, EvalLog
 from app.db.session import get_db
 from app.eval.ragas_eval import run_eval_async, tune_relevance_threshold
 
-router = APIRouter(prefix="/eval", tags=["eval"])
+router = APIRouter(prefix="/eval", tags=["Evaluations"])
 
 _DEFAULT_DATASET = Path(__file__).resolve().parents[1] / "eval" / "test_qa_sets" / "example.json"
 

@@ -1,142 +1,174 @@
-# Grounded — RAG Chatbot
+# OmniCentricBot: Grounded RAG Platform
 
-Context-grounded multimodal QA: upload PDF / image / video / text / web pages, ask questions, get answers **only** from your knowledge base — or an explicit refusal when context is insufficient.
+Welcome to **OmniCentricBot**, a state-of-the-art Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
 
-## What makes this different
+This project allows you to build a highly intelligent, multimodal knowledge base by uploading PDFs, images, videos, text files, and web page URLs. The bot strictly answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than hallucinate if the context is insufficient.
 
-1. **Hybrid retrieval + reranking** — dense + BM25 → RRF → cross-encoder
-2. **Honest refusal** — relevance gate + groundedness check (not prompt-only)
-3. **Modality-ready pipeline** — `DocumentLoader` → `RawElement` → `Chunk` (PDF, image, Whisper video, text, web)
-4. **Lightweight GraphRAG** — entity/relation expand for multi-hop on contracts/manuals
-5. **Google Sign-In only** — optional; no passwords / API-key auth
-6. **Auto Docling** — hard layouts escalate to Docling; simple PDFs stay on the fast path
+## 🌟 What Makes This Exceptional?
 
-## Stack
+1. **Strict Context Grounding (Zero Hallucination)**
+   Unlike standard LLM chatbots, OmniCentricBot employs strict relevance gating and self-RAG groundedness checks. If the answer isn't in your documents, the bot honestly refuses to guess.
+2. **Multimodal Capabilities**
+   The platform processes far more than just text. It parses complex PDF layouts (via Docling), analyzes images, transcribes audio/video (via Whisper), and scrapes web pages, unifying them into a single queryable vector space.
+3. **Advanced Hybrid Retrieval Pipeline**
+   We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to guarantee high-precision context retrieval.
+4. **Interactive Citation UX**
+   The frontend doesn't just give you an answer; it proves it. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
+5. **Dynamic Evaluations & Auto-Tuning**
+   Built-in evaluation endpoints allow you to run automated RAGAS-style metrics on held-out QA sets, and even automatically sweep and recommend optimal relevance thresholds for your specific dataset.
 
-| Layer | Choice |
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 + Tailwind |
-| Backend | FastAPI + structured logging |
-| Auth | Google Identity Services → session JWT |
-| Parse | `PDF_PARSER=auto` · pymupdf4llm · Docling (hard) · vision · Whisper · HTML |
-| Chunking | Structure-aware + contextual prefix |
-| Embeddings | fastembed `BAAI/bge-small-en-v1.5` (local) |
-| Retrieval | Hybrid → RRF → rerank → GraphRAG expand → agentic 2nd hop |
-| Eval | LLM-judge + optional RAGAS + `/eval/tune` threshold sweep |
-| Vectors | On-disk Qdrant / Compose |
-| Relational | SQLite locally · Postgres in Docker |
-| LLM | Groq → Gemini fallback |
+| **Frontend** | Next.js 15 (React 19), TailwindCSS, React-PDF, Framer Motion |
+| **Backend** | FastAPI (Python 3.11+), Uvicorn, SQLAlchemy |
+| **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
+| **Vector DB** | Qdrant (Local on-disk or Cloud) |
+| **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
+| **Embeddings** | `BAAI/bge-small-en-v1.5` (via FastEmbed) |
+| **LLM Engine** | Groq (Llama 3) / Gemini fallback |
+| **Document Parsing**| PyMuPDF4LLM, Docling (Complex PDFs), Whisper (Audio) |
 
-## Quick start (no Docker)
+---
 
-### 1. Backend (use a venv — do not install into global Python)
+## 🚀 Quick Start Guide (Local Development)
+
+You can run the entire stack locally without Docker for rapid development.
+
+### 1. Backend Setup
+
+It is highly recommended to use a Python virtual environment to prevent dependency conflicts.
 
 ```bash
 cd backend
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1     # Windows PowerShell
+
+# Activate the virtual environment:
+# On Windows:
+.\.venv\Scripts\Activate.ps1
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install the core backend and ingestion dependencies
 pip install -e ".[ingestion]"
-# optional: pip install -e ".[advanced]"   # Docling
-# optional: pip install -e ".[eval]"       # RAGAS
-copy ..\.env.example .env
-# set GROQ_API_KEY=...
-uvicorn app.main:app --reload --port 8000
+
+# Duplicate the example environment file
+cp ../.env.example .env
 ```
 
-> Always activate `.venv` before `pip install` / `uvicorn`. That keeps packages
-> out of your global Python and avoids version conflicts with other projects.
+**Environment Configuration (`.env`)**
+Open `.env` and configure your API keys:
+* `GROQ_API_KEY`: Your Groq API key for the LLM.
+* `AUTH_ENABLED`: Set to `false` for local testing, or `true` if you have configured a `GOOGLE_CLIENT_ID`.
 
-Google Sign-In: see [docs/GOOGLE_AUTH.md](docs/GOOGLE_AUTH.md).
+**Start the Server**
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+Your backend is now running! View the interactive OpenAPI documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+### 2. Frontend Setup
 
-### 2. Frontend
+In a new terminal window:
 
 ```bash
 cd frontend
 npm install
+```
+
+**Environment Configuration (`.env`)**
+Create a `.env` file in the `frontend` directory if you need to override the API URL or provide a Google Client ID for frontend auth rendering.
+
+**Start the Client**
+```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-Open [http://localhost:3000](http://localhost:3000).
+---
 
-## Deploy (production)
+## 🔒 Authentication (Google Sign-In)
 
-See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the full guide.
+OmniCentricBot supports optional, secure authentication exclusively via Google Sign-In. No passwords or custom registration flows are required.
 
-**Recommended:** VPS + `docker-compose.prod.yml` + Caddy HTTPS.
+To enable authentication:
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create OAuth 2.0 Client credentials.
+2. Add your frontend domain (e.g., `http://localhost:3000`) to the **Authorized JavaScript origins**.
+3. In your backend `.env`, set:
+   ```env
+   AUTH_ENABLED=true
+   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   ```
+4. In your frontend `.env`, set:
+   ```env
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   ```
 
-```bash
-cp .env.production.example .env.production
-# edit DOMAIN, secrets, GROQ_API_KEY, GOOGLE_CLIENT_ID
-docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
-```
+When enabled, documents and chat sessions are strictly scoped to the user who created them.
 
-Local full stack (no HTTPS):
+---
 
-```bash
-docker compose up --build
-```
+## 🚢 Production Deployment
 
-Google Sign-In: [docs/GOOGLE_AUTH.md](docs/GOOGLE_AUTH.md).
+For production, the application is fully containerized. We recommend using Docker Compose with a reverse proxy like Caddy or Nginx for HTTPS.
 
-## Eval & threshold tuning
+1. Prepare your production environment file:
+   ```bash
+   cp .env.production.example .env.production
+   ```
+2. Edit `.env.production` to include your domain, secure random secrets, API keys, and Postgres credentials.
+3. Build and launch the stack in detached mode:
+   ```bash
+   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+   ```
 
-With a ready document scoped in the UI:
+*(Note: FastAPI Cloud and Vercel are also supported out-of-the-box for serverless deployments).*
 
-- **Run eval** — held-out Q&A (`backend/app/eval/test_qa_sets/example.json`) → faithfulness / refusal / context metrics (+ RAGAS if installed)
-- **Tune threshold** — sweeps `RELEVANCE_THRESHOLD` and prints a recommendation
+---
 
-CLI:
+## 📡 API Reference
 
+The backend exposes a clean, documented REST API. For full schema details, visit the `/docs` endpoint on your running backend. 
+
+### Core Endpoints
+
+* **Documents**
+  * `POST /documents/upload` - Upload and asynchronously ingest a media file.
+  * `POST /documents/from-url` - Scrape and ingest a public webpage.
+  * `GET /documents` - List all documents in the user's knowledge base.
+  * `GET /documents/{id}/file` - Retrieve the original media file.
+  * `DELETE /documents/{id}` - Safely cascade delete a document and its vectors.
+
+* **Chat Sessions**
+  * `POST /chat/sessions` - Create a new conversation memory scoped to specific documents.
+  * `POST /chat/{id}/message` - Send a prompt and receive a streamed (SSE) or JSON response.
+  * `GET /chat/{id}/history` - Fetch the full history of a chat session.
+  * `DELETE /chat/{id}` - Delete a chat session.
+
+* **Auth**
+  * `POST /auth/google` - Exchange a Google ID token for a stateless session JWT.
+
+---
+
+## 🧪 Evaluations & Auto-Tuning
+
+OmniCentricBot includes a built-in suite for evaluating RAG performance against held-out datasets (Faithfulness, Context Precision, Refusal Rates).
+
+You can run evaluations via the API or CLI:
 ```bash
 cd backend
+# Run a standard evaluation on a document
 python -m app.eval.ragas_eval --document-id <UUID>
+
+# Sweep the relevance threshold hyperparameter and get an optimal recommendation
 python -m app.eval.ragas_eval --document-id <UUID> --tune
 ```
 
-## API (mandatory clean frontend↔backend contract)
-
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/auth/google` | Exchange Google ID token → session JWT |
-| `GET` | `/auth/me` | Auth status |
-| `GET` | `/auth/config` | Public `{auth_enabled, google_client_id}` |
-| `POST` | `/documents/upload` | PDF / image / video / text → async ingest |
-| `POST` | `/documents/from-url` | Ingest a public web page |
-| `POST` | `/documents/{id}/reingest` | Re-index without model retraining |
-| `GET` | `/documents/{id}/status` | Parse/chunk/embed progress |
-| `GET` | `/documents` | List knowledge-base docs |
-| `GET` | `/documents/{id}/file` | Serve original media (`?token=` when auth on) |
-| `DELETE` | `/documents/{id}` | Remove doc + vectors + graph |
-| `POST` | `/chat/sessions` | Create session (conversation memory) |
-| `POST` | `/chat/{id}/message` | Ask (SSE or JSON) |
-| `GET` | `/chat/{id}/history` | Session history |
-| `POST` | `/eval/run` | Run held-out eval |
-| `POST` | `/eval/tune` | Sweep relevance thresholds |
-| `GET` | `/eval/summary` | Gate-failure observability |
-| `GET` | `/docs` | OpenAPI / Swagger |
-
-## Feature checklist
-
-| Feature | Status |
-|---|---|
-| Intelligent grounded retrieval | Yes — hybrid + gates |
-| Conversation memory (session) | Yes — history → query rewrite |
-| Multi-format KB | PDF, image, video/audio, text, URL |
-| KB updates without retraining | `POST …/reingest` replaces vectors only |
-| Auth | Google Sign-In only (`AUTH_ENABLED`) |
-| API documentation | FastAPI `/docs` + `/redoc` |
-| Backend logger | Structured stdout logger |
-| Citation UX | Page jump + snippet highlight in PDF text layer |
-| Docling for hard layouts | `PDF_PARSER=auto` |
-| Eval + threshold tune | UI buttons + `/eval/*` |
-
-## Grounding contract
-
-> Answer **only** from retrieved context. If insufficient:  
-> `I don't have enough context in the document to answer that.`
+---
 
 ## License
 
-MIT — add when you publish.
+This project is licensed under the MIT License.

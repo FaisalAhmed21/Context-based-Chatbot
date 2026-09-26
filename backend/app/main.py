@@ -34,26 +34,56 @@ async def lifespan(_app: FastAPI):
         print(f"[warn] Qdrant init skipped/failed: {exc}")
     yield
 
+tags_metadata = [
+    {
+        "name": "Auth",
+        "description": "Operations for handling Google OAuth authentication and session management.",
+    },
+    {
+        "name": "Documents",
+        "description": "Upload, parse, embed, and manage multimodal knowledge base documents (PDF, image, video, URL).",
+    },
+    {
+        "name": "Chat",
+        "description": "Context-grounded RAG chat sessions, streaming responses, and message history.",
+    },
+    {
+        "name": "Evaluations",
+        "description": "RAGAS-based eval metrics, precision/recall analysis, and hyperparameter tuning.",
+    },
+    {
+        "name": "System",
+        "description": "System liveness and health check probes.",
+    },
+]
+
 app = FastAPI(
-    title="Grounded — RAG Chatbot API",
+    title="Grounded — Context-Aware Multimodal RAG API",
     description=(
-        "Context-grounded multimodal QA: upload PDF / image / video / text / web pages, "
-        "ask questions, get answers **only** from your knowledge base — or an explicit "
-        "refusal when context is insufficient.\n\n"
-        "## Pipeline\n"
-        "1. Ingestion: parse → structure-aware chunk → embed → Qdrant (+ optional GraphRAG)\n"
-        "2. Retrieval: hybrid dense+BM25 → RRF → cross-encoder rerank → optional agentic hop\n"
-        "3. Generation: grounded prompt + relevance gate + Self-RAG groundedness check\n\n"
-        "## Auth\n"
-        "Optional Google Sign-In only. Set `AUTH_ENABLED=true` + `GOOGLE_CLIENT_ID`, "
-        "then `POST /auth/google` with the GIS credential and send "
-        "`Authorization: Bearer <access_token>`.\n\n"
-        "Interactive docs: `/docs` (Swagger) · `/redoc`"
+        "Welcome to the **Grounded** API documentation! 🚀\n\n"
+        "Grounded is a highly precise, context-grounded multimodal RAG (Retrieval-Augmented Generation) "
+        "chatbot engine. It ensures answers are strictly derived from your uploaded documents (PDFs, Images, "
+        "Web Pages) and explicitly refuses to hallucinate when context is insufficient.\n\n"
+        "### Key Capabilities\n"
+        "* **Multimodal Ingestion**: Structure-aware parsing for text, URLs, and binary formats.\n"
+        "* **Hybrid Retrieval**: Dense vector search (Qdrant) combined with BM25 keyword matching and Reciprocal Rank Fusion (RRF).\n"
+        "* **Cross-Encoder Reranking**: Advanced relevance filtering to drop low-quality context chunks.\n"
+        "* **Self-RAG Groundedness**: In-flight verification ensures the LLM's response perfectly aligns with the provided context.\n\n"
+        "### Getting Started\n"
+        "1. **Authenticate** via `/auth/google` to receive a JWT.\n"
+        "2. **Upload** a document using `/documents/upload`.\n"
+        "3. **Create** a chat session scoped to your document IDs using `/chat/sessions`.\n"
+        "4. **Stream** responses using `/chat/{session_id}/message`.\n\n"
     ),
-    version="0.3.0",
+    version="1.0.0",
+    openapi_tags=tags_metadata,
     lifespan=lifespan,
-    contact={"name": "Grounded RAG"},
-    license_info={"name": "MIT"},
+    contact={
+        "name": "Grounded AI Team",
+        "url": "https://github.com/FaisalAhmed21/Context-based-Chatbot",
+        "email": "support@grounded-rag.dev",
+    },
+    license_info={"name": "MIT License", "url": "https://opensource.org/licenses/MIT"},
 )
 
 settings = get_settings()

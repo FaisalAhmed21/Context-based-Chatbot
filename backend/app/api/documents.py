@@ -26,7 +26,7 @@ from app.retrieval.vector_store import delete_by_document
 from app.types import DocumentOut, DocumentStatus
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(prefix="/documents", tags=["Documents"])
 
 _ALLOWED = {
     ".pdf",

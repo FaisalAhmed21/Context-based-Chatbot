@@ -18,7 +18,7 @@ from app.db.session import SessionLocal, get_db
 from app.generation.orchestrator import answer_question
 from app.types import ChatMessageOut, Citation
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["Chat"])
 
 class CreateSessionBody(BaseModel):
     document_ids: list[uuid.UUID] = Field(default_factory=list)
