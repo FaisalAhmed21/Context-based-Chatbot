@@ -17,6 +17,7 @@ dependencies = [
   "sse-starlette>=2.1.0",
   "python-dotenv>=1.0.1",
   "aiofiles>=24.1.0",
+  "fastembed>=0.5.0",
   "google-auth>=2.35.0",
   "PyJWT>=2.9.0",
   "pymupdf4llm>=0.0.17",
