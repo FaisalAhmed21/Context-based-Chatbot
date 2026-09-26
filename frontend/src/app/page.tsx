@@ -512,10 +512,14 @@ export default function HomePage() {
                       <button
                         onClick={async () => {
                           if (confirm("Delete this chat?")) {
-                            await deleteSession(sessionId);
-                            setSessionId(null);
-                            setMessages([]);
-                            await refresh();
+                            try {
+                              await deleteSession(sessionId);
+                              setSessionId(null);
+                              setMessages([]);
+                              await refresh();
+                            } catch (err) {
+                              alert("Failed to delete. Make sure your FastAPI backend is fully redeployed with the new code! Error: " + (err instanceof Error ? err.message : String(err)));
+                            }
                           }
                         }}
                         className="rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-600 hover:bg-red-100"
