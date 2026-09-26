@@ -37,7 +37,16 @@ async def _score_pair_llm(question: str, answer: str, context: str) -> dict[str,
             "answer_relevance": 0.5,
         }
 
-    prompt = f
+    prompt = f"""
+Evaluate the following generated answer against the context and question.
+Question: {question}
+Context: {context}
+Answer: {answer}
+
+Output exactly two lines with scores between 0.0 and 1.0:
+Faithfulness: <score>
+Answer_Relevance: <score>
+"""
     raw = await complete_chat(
         [
             {

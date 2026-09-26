@@ -117,12 +117,22 @@ The backend exposes a clean, documented REST API. For full schema details, visit
 
 OmniCentricBot includes a built-in suite for evaluating RAG performance against held-out datasets (Faithfulness, Context Precision, Refusal Rates).
 
+### Prerequisites for Evaluation
+1. **Install Eval Dependencies:** You must install the `[eval]` extra:
+   ```bash
+   cd backend
+   pip install -e ".[eval]"
+   ```
+2. **Use a Local Document ID:** If you are running the evaluation script locally, you **must** use a Document ID that exists in your local `qdrant_data` database. You cannot use a Document ID from your production FastAPI Cloud deployment! Start your local frontend and backend, upload a test document to `localhost:3000`, grab the local Document ID from the URL, and use that.
+3. **Stop the Backend Server:** Qdrant local uses a file lock on the `qdrant_data` folder. You cannot run the background `uvicorn` server and the evaluation script at the same time. Stop the local backend (`Ctrl+C`) before running the script. *(If it crashed, you may need to manually delete the hidden `qdrant_data/.lock` file).*
+
+### Running Evaluations
 You can run evaluations via the API or CLI:
 ```bash
 cd backend
 # Run a standard evaluation on a document
-python -m app.eval.ragas_eval --document-id <UUID>
+python -m app.eval.ragas_eval --document-id <LOCAL_UUID>
 
 # Sweep the relevance threshold hyperparameter and get an optimal recommendation
-python -m app.eval.ragas_eval --document-id <UUID> --tune
+python -m app.eval.ragas_eval --document-id <LOCAL_UUID> --tune
 ```

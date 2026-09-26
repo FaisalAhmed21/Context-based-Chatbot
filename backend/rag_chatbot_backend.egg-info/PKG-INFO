@@ -3,7 +3,7 @@ Name: rag-chatbot-backend
 Version: 0.1.0
 Summary: Grounded PDF QA chatbot — FastAPI backend
 Requires-Python: >=3.10
-Requires-Dist: fastapi>=0.115.0
+Requires-Dist: fastapi[standard]>=0.115.0
 Requires-Dist: uvicorn[standard]>=0.32.0
 Requires-Dist: python-multipart>=0.0.12
 Requires-Dist: sqlalchemy[asyncio]>=2.0.36
@@ -19,18 +19,11 @@ Requires-Dist: aiofiles>=24.1.0
 Requires-Dist: fastembed>=0.5.0
 Requires-Dist: google-auth>=2.35.0
 Requires-Dist: PyJWT>=2.9.0
-Provides-Extra: ingestion
-Requires-Dist: pymupdf4llm>=0.0.17; extra == "ingestion"
-Requires-Dist: pymupdf>=1.25.0; extra == "ingestion"
-Provides-Extra: advanced
-Requires-Dist: docling>=2.15.0; extra == "advanced"
-Requires-Dist: langchain>=0.3.0; extra == "advanced"
-Requires-Dist: langchain-community>=0.3.0; extra == "advanced"
-Requires-Dist: langgraph>=0.2.0; extra == "advanced"
-Provides-Extra: eval
-Requires-Dist: ragas>=0.2.0; extra == "eval"
-Requires-Dist: datasets>=3.0.0; extra == "eval"
+Requires-Dist: pymupdf4llm>=0.0.17
+Requires-Dist: pymupdf>=1.25.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8.3.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.24.0; extra == "dev"
 Requires-Dist: ruff>=0.8.0; extra == "dev"
+Provides-Extra: eval
+Requires-Dist: ragas>=0.1.0; extra == "eval"

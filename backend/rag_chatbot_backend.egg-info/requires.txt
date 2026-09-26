@@ -1,4 +1,4 @@
-fastapi>=0.115.0
+fastapi[standard]>=0.115.0
 uvicorn[standard]>=0.32.0
 python-multipart>=0.0.12
 sqlalchemy[asyncio]>=2.0.36
@@ -14,12 +14,8 @@ aiofiles>=24.1.0
 fastembed>=0.5.0
 google-auth>=2.35.0
 PyJWT>=2.9.0
-
-[advanced]
-docling>=2.15.0
-langchain>=0.3.0
-langchain-community>=0.3.0
-langgraph>=0.2.0
+pymupdf4llm>=0.0.17
+pymupdf>=1.25.0
 
 [dev]
 pytest>=8.3.0
@@ -27,9 +23,4 @@ pytest-asyncio>=0.24.0
 ruff>=0.8.0
 
 [eval]
-ragas>=0.2.0
-datasets>=3.0.0
-
-[ingestion]
-pymupdf4llm>=0.0.17
-pymupdf>=1.25.0
+ragas>=0.1.0
