@@ -142,6 +142,7 @@ export default function HomePage() {
       setSessionId(id);
       const session = sessions.find((s) => s.id === id);
       if (session && session.document_ids) {
+        loadingSessionRef.current = true;
         setScopeIds(session.document_ids);
       }
     } catch (e) {
@@ -169,9 +170,15 @@ export default function HomePage() {
     return () => clearInterval(t);
   }, [documents]);
 
+  const loadingSessionRef = useRef(false);
+
   useEffect(() => {
     if (scopeReady.length === 0 || needsGoogle) {
       setSessionId(null);
+      return;
+    }
+    if (loadingSessionRef.current) {
+      loadingSessionRef.current = false;
       return;
     }
     let cancelled = false;
@@ -185,9 +192,10 @@ export default function HomePage() {
           setPage(1);
           setSeekSeconds(null);
           setHighlightText(null);
+          await refresh();
         }
       } catch {
-
+        // ignore
       }
     })();
     return () => {
