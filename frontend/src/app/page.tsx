@@ -342,7 +342,7 @@ export default function HomePage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">
-              ConcentricBot
+              OmniCentricBot
             </h1>
             <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium">
               Upload your documents and chat instantly. I can read PDFs, images, and text to help you find answers with perfect accuracy.
@@ -493,7 +493,7 @@ export default function HomePage() {
               <div className="mb-4 flex items-center justify-between border-b border-indigo-100/50 pb-3">
                 <h2 className="text-sm font-bold tracking-wide text-indigo-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
-                  Concentric Chat
+                  OmniCentric Chat
                 </h2>
 
                 {sessions.length > 0 && (
