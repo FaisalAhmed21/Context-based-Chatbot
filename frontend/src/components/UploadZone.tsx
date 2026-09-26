@@ -84,8 +84,8 @@ export function UploadZone({ onUploaded }: Props) {
         disabled={busy}
         className={`w-full rounded-xl border border-dashed px-6 py-8 text-left transition flex flex-col items-center justify-center text-center ${
           dragging
-            ? "border-[#D8B4A0] bg-[#F9F5F3]/80"
-            : "border-stone-300 bg-stone-50/50 hover:border-[#D8B4A0] hover:bg-stone-50"
+            ? "border-[#B87A5D] bg-[#F9F5F3]/80"
+            : "border-stone-300 bg-stone-50/50 hover:border-[#B87A5D] hover:bg-stone-50"
         } disabled:opacity-60`}
       >
         <p className="font-display text-lg font-medium text-stone-800">Upload Document</p>
@@ -117,7 +117,7 @@ export function UploadZone({ onUploaded }: Props) {
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Or paste a web page URL…"
           disabled={busy}
-          className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#C8A28D]"
+          className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#B87A5D]"
           onKeyDown={(e) => {
             if (e.key === "Enter") void handleUrl();
           }}
@@ -126,7 +126,7 @@ export function UploadZone({ onUploaded }: Props) {
           type="button"
           disabled={busy || !url.trim()}
           onClick={() => void handleUrl()}
-          className="rounded-lg bg-[#D8B4A0] px-4 py-2 text-xs font-medium text-stone-900 hover:bg-[#C8A28D] disabled:opacity-40 transition-colors"
+          className="rounded-lg bg-[#B87A5D] px-4 py-2 text-xs font-medium text-white hover:bg-[#A36B50] disabled:opacity-40 transition-colors"
         >
           Add
         </button>

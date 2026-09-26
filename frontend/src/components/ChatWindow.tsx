@@ -42,7 +42,7 @@ export function ChatWindow({
             <div
               className={`max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 m.role === "user"
-                  ? "bg-[#D8B4A0] text-stone-900 shadow-sm"
+                  ? "bg-[#B87A5D] text-white shadow-sm"
                   : m.refused
                     ? "border border-amber-200 bg-[#F9F5F3] text-[#8A665A]"
                     : "border border-stone-200 bg-white text-stone-800 shadow-sm"
@@ -89,12 +89,12 @@ export function ChatWindow({
           placeholder={
             disabled ? "Upload & wait for Ready…" : "Ask a question…"
           }
-          className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-[#C8A28D] focus:bg-white transition-colors disabled:opacity-50"
+          className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-[#B87A5D] focus:bg-white transition-colors disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={disabled || streaming || !draft.trim()}
-          className="rounded-xl bg-[#D8B4A0] px-5 py-2.5 text-sm font-medium text-stone-900 hover:bg-[#C8A28D] disabled:opacity-40 transition-colors shadow-sm"
+          className="rounded-xl bg-[#B87A5D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#A36B50] disabled:opacity-40 transition-colors shadow-sm"
         >
           Send
         </button>

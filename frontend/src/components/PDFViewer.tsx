@@ -228,7 +228,7 @@ export function PDFViewer({
 
         {!fileUrl && (
           <div className="relative z-[1] mx-auto mt-16 max-w-sm rounded bg-white/90 p-6 text-center shadow-sm">
-            <p className="font-display text-lg text-stone-900">Preview</p>
+            <p className="font-display text-lg text-white">Preview</p>
             <p className="mt-2 text-sm text-stone-600">
               Upload a PDF, image, video, or text. Citation chips jump to the page or
               timestamp and highlight the source snippet.
@@ -239,7 +239,7 @@ export function PDFViewer({
         {fileUrl && imageMode && (
           <div
             className={`relative z-[1] max-w-full transition ${
-              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
+              flash ? "ring-2 ring-[#B87A5D] ring-offset-4" : ""
             }`}
           >
             {}
@@ -254,7 +254,7 @@ export function PDFViewer({
         {fileUrl && videoMode && (
           <div
             className={`relative z-[1] w-full max-w-xl transition ${
-              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
+              flash ? "ring-2 ring-[#B87A5D] ring-offset-4" : ""
             }`}
           >
             {audioOnly ? (
@@ -287,7 +287,7 @@ export function PDFViewer({
             title={filename || "text"}
             src={fileUrl}
             className={`relative z-[1] h-[70vh] w-full max-w-xl rounded border border-stone-200 bg-white shadow-md ${
-              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
+              flash ? "ring-2 ring-[#B87A5D] ring-offset-4" : ""
             }`}
           />
         )}
@@ -296,7 +296,7 @@ export function PDFViewer({
           <div
             ref={pageWrapRef}
             className={`relative z-[1] transition ring-offset-2 ${
-              flash ? "ring-2 ring-[#C8A28D] ring-offset-4" : ""
+              flash ? "ring-2 ring-[#B87A5D] ring-offset-4" : ""
             }`}
           >
             <Document

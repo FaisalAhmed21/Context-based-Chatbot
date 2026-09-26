@@ -63,7 +63,7 @@ export function DocumentSidebar({
               <div
                 className={`group rounded-xl border px-3 py-2 transition ${
                   viewing
-                    ? "border-[#D8B4A0] bg-[#F9F5F3]/50"
+                    ? "border-[#B87A5D] bg-[#F9F5F3]/50"
                     : inScope
                       ? "border-[#EAD8D0] bg-white"
                       : "border-stone-200 bg-stone-50/50 hover:border-stone-300"
@@ -72,7 +72,7 @@ export function DocumentSidebar({
                 <div className="flex items-start gap-2">
                   <input
                     type="checkbox"
-                    className="mt-1 accent-[#C8A28D]"
+                    className="mt-1 accent-[#B87A5D]"
                     checked={inScope}
                     disabled={!ready}
                     onChange={() => onToggleScope(d.id)}

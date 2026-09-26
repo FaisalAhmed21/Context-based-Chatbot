@@ -341,7 +341,7 @@ export default function HomePage() {
       <div className="relative mx-auto flex min-h-screen max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-[#B0897B] to-[#9A7B73] bg-clip-text text-transparent drop-shadow-sm">
+            <h1 className="font-display text-4xl tracking-tight md:text-5xl font-extrabold bg-gradient-to-r from-[#8B5E4B] to-[#6E4839] bg-clip-text text-transparent drop-shadow-sm">
               OmniCentricBot
             </h1>
             <p className="mt-2 max-w-xl text-sm text-slate-600 font-medium">
@@ -393,7 +393,7 @@ export default function HomePage() {
 
         {needsGoogle && (
           <div className="rounded-2xl border border-stone-200 bg-white/90 px-6 py-12 text-center shadow-sm">
-            <p className="font-display text-2xl text-stone-900">Sign in to continue</p>
+            <p className="font-display text-2xl text-white">Sign in to continue</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-stone-600">
               Grounded uses Google Sign-In only — no passwords or API keys. Your
               documents stay scoped to your account.
@@ -492,7 +492,7 @@ export default function HomePage() {
             <div className="flex flex-col min-h-[420px] lg:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
               <div className="mb-4 flex items-center justify-between border-b border-stone-200/70 pb-3">
                 <h2 className="text-sm font-bold tracking-wide text-stone-800 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#F9F5F3]0 shadow-[0_0_8px_rgba(216,180,160,0.6)] animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#F9F5F3]0 shadow-[0_0_8px_rgba(184,122,93,0.6)] animate-pulse"></span>
                   OmniCentric Chat
                 </h2>
 
