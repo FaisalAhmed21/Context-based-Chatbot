@@ -264,6 +264,7 @@ async def document_file(
         path,
         media_type=media,
         filename=doc.filename,
+        content_disposition_type="inline",
         headers={"Cache-Control": "private, max-age=3600"},
     )
 
