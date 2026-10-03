@@ -1,21 +1,21 @@
 # OmniCentricBot: Grounded RAG Platform
 
-Welcome to **OmniCentricBot**, a state-of-the-art Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
+Welcome to **OmniCentricBot**, a Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
 
-This project allows you to build a highly intelligent, multimodal knowledge base by uploading PDFs, images, text files, and web page URLs. The bot strictly answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than hallucinate if the context is insufficient.
+This project allows you to build a searchable, multimodal knowledge base by uploading PDFs, images, text files, and web page URLs. The bot answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than guess when the context is insufficient.
 
-## What Makes This Exceptional?
+## Key Features
 
-1. **Strict Context Grounding (Zero Hallucination)**
-   Unlike standard LLM chatbots, OmniCentricBot employs strict relevance gating and self-RAG groundedness checks. If the answer isn't in your documents, the bot honestly refuses to guess.
+1. **Context-Grounded Answers (Refuses Instead of Guessing)**
+   Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating and Self-RAG-style groundedness checks to keep answers tied to your documents. If the answer isn't in your documents, the bot refuses instead of guessing.
 2. **Multimodal Capabilities**
-   The platform processes far more than just text. It parses complex PDF layouts, analyzes images, and scrapes web pages, unifying them into a single queryable vector space.
-3. **Advanced Hybrid Retrieval Pipeline**
-   We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to guarantee high-precision context retrieval.
+   The platform goes beyond plain text: it parses PDF layouts, processes images, and scrapes web pages, and indexes them together in a single queryable vector store.
+3. **Hybrid Retrieval Pipeline**
+   We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to improve the precision of the retrieved context.
 4. **Interactive Citation UX**
-   The frontend doesn't just give you an answer; it proves it. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
-5. **Dynamic Evaluations & Auto-Tuning**
-   Built-in evaluation endpoints allow you to run automated RAGAS-style metrics on held-out QA sets, and even automatically sweep and recommend optimal relevance thresholds for your specific dataset.
+   The frontend doesn't just give you an answer; it shows its sources. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
+5. **Built-in Evaluations & Threshold Tuning**
+   Built-in evaluation endpoints allow you to run automated RAGAS-style metrics on held-out QA sets, and sweep relevance thresholds to recommend a suitable value for your specific dataset.
 
 ---
 
@@ -36,7 +36,7 @@ This project allows you to build a highly intelligent, multimodal knowledge base
 
 ## Production Deployment (Vercel & FastAPI Cloud)
 
-This project is fully optimized for serverless and cloud deployments.
+This project is deployed on Vercel (frontend) and FastAPI Cloud (backend).
 
 ### 1. Backend (FastAPI Cloud)
 The backend runs on FastAPI Cloud. 
@@ -64,7 +64,7 @@ If you wish to run the project locally for development purposes:
    ```bash
    cd backend
    python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
+   .\.venv\Scripts\Activate.ps1   # Windows PowerShell; on macOS/Linux: source .venv/bin/activate
    pip install -e .
    cp ../.env.example .env
    uvicorn app.main:app --reload --port 8000
@@ -83,7 +83,7 @@ If you wish to run the project locally for development purposes:
 
 ## Authentication (Google Sign-In)
 
-OmniCentricBot supports secure authentication exclusively via Google Sign-In. No passwords or custom registration flows are required.
+OmniCentricBot uses Google Sign-In (OAuth2) for authentication, with stateless JWT sessions. No passwords or custom registration flows are required.
 
 When enabled, documents and chat sessions are strictly scoped to the user who created them.
 
@@ -100,7 +100,7 @@ The backend exposes a clean, documented REST API. For full schema details, visit
   * `POST /documents/from-url` - Scrape and ingest a public webpage.
   * `GET /documents` - List all documents in the user's knowledge base.
   * `GET /documents/{id}/file` - Retrieve the original media file.
-  * `DELETE /documents/{id}` - Safely cascade delete a document and its vectors.
+  * `DELETE /documents/{id}` - Delete a document and its vectors (cascade).
 
 * **Chat Sessions**
   * `POST /chat/sessions` - Create a new conversation memory scoped to specific documents.
@@ -133,6 +133,6 @@ cd backend
 # Run a standard evaluation on a document
 python -m app.eval.ragas_eval --document-id <LOCAL_UUID>
 
-# Sweep the relevance threshold hyperparameter and get an optimal recommendation
+# Sweep the relevance threshold hyperparameter and get a recommended value
 python -m app.eval.ragas_eval --document-id <LOCAL_UUID> --tune
 ```
