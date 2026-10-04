@@ -72,12 +72,18 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   const needle = norm(snippet).slice(0, 120);
   if (needle.length < 8) return;
 
-  const spans = Array.from(
+  const unsortedSpans = Array.from(
     root.querySelectorAll(".react-pdf__Page__textContent span")
   ) as HTMLElement[];
-  if (!spans.length) return;
+  if (!unsortedSpans.length) return;
 
-  const spacelessNeedle = snippet.toLowerCase().replace(/\s+/g, "").slice(0, 100);
+  const spans = unsortedSpans.sort((a, b) => {
+    const yDiff = a.offsetTop - b.offsetTop;
+    if (Math.abs(yDiff) > 5) return yDiff;
+    return a.offsetLeft - b.offsetLeft;
+  });
+
+  const spacelessNeedle = snippet.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 100);
   if (spacelessNeedle.length < 8) return;
 
   const charToSpan: HTMLElement[] = [];
@@ -85,7 +91,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   
   for (const el of spans) {
     const text = el.textContent || "";
-    const spacelessText = text.toLowerCase().replace(/\s+/g, "");
+    const spacelessText = text.toLowerCase().replace(/[^a-z0-9]/g, "");
     spacelessHaystack += spacelessText;
     for (let i = 0; i < spacelessText.length; i++) {
       charToSpan.push(el);
@@ -94,7 +100,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
 
   let idx = spacelessHaystack.indexOf(spacelessNeedle);
   if (idx < 0) {
-    const short = spacelessNeedle.slice(0, Math.min(35, spacelessNeedle.length));
+    const short = spacelessNeedle.slice(0, Math.min(30, spacelessNeedle.length));
     idx = spacelessHaystack.indexOf(short);
     if (idx < 0) return;
   }
