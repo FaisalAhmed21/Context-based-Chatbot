@@ -39,3 +39,12 @@ code {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(216, 180, 160, 0.6);
 }
+
+/* Citation highlight in PDF text layer — applied directly to spans
+   to avoid DOM restructuring that causes text blur */
+.react-pdf__Page__textContent span.citation-hl {
+  background: rgba(13, 148, 136, 0.25) !important;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}

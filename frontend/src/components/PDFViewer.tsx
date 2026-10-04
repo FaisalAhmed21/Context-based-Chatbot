@@ -52,6 +52,15 @@ function norm(s: string): string {
 }
 
 function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | undefined) {
+  // Remove previous highlights — we use CSS classes instead of <mark> elements
+  // to avoid disrupting react-pdf's absolute-positioned text layer (which causes blur)
+  root.querySelectorAll(".citation-hl").forEach((el) => {
+    el.classList.remove("citation-hl");
+    (el as HTMLElement).style.removeProperty("background");
+    (el as HTMLElement).style.removeProperty("border-radius");
+    (el as HTMLElement).style.removeProperty("box-shadow");
+  });
+  // Also clean up legacy <mark> elements from previous version
   root.querySelectorAll("mark.citation-hl").forEach((el) => {
     const parent = el.parentNode;
     if (!parent) return;
@@ -63,59 +72,53 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   const needle = norm(snippet).slice(0, 120);
   if (needle.length < 8) return;
 
-  const spans = Array.from(root.querySelectorAll(".react-pdf__Page__textContent span"));
+  const spans = Array.from(
+    root.querySelectorAll(".react-pdf__Page__textContent span")
+  ) as HTMLElement[];
   if (!spans.length) return;
 
-  let hay = "";
-  const ranges: Array<{ start: number; end: number; el: Element }> = [];
+  // Build a precise character-offset map: for each span, record its
+  // [start, end) range within the concatenated normalized text.
+  // We insert a single space between spans to mirror natural word boundaries.
+  const entries: Array<{ normStart: number; normEnd: number; el: HTMLElement }> = [];
+  let fullNorm = "";
   for (const el of spans) {
-    const t = el.textContent || "";
-    const start = hay.length;
-    hay += t;
-    ranges.push({ start, end: hay.length, el });
-
-    hay += " ";
+    const raw = el.textContent || "";
+    const n = norm(raw);
+    if (!n) continue;
+    if (fullNorm.length > 0) fullNorm += " ";
+    const start = fullNorm.length;
+    fullNorm += n;
+    entries.push({ normStart: start, normEnd: fullNorm.length, el });
   }
-  const hayNorm = norm(hay);
-  let idx = hayNorm.indexOf(needle);
-  if (idx < 0) {
 
+  // Find the needle in the concatenated text
+  let idx = fullNorm.indexOf(needle);
+  if (idx < 0) {
+    // Fallback: try a shorter prefix match
     const short = needle.slice(0, Math.min(40, needle.length));
-    idx = hayNorm.indexOf(short);
+    idx = fullNorm.indexOf(short);
     if (idx < 0) return;
   }
-  const endIdx = idx + Math.min(needle.length, 80);
+  const endIdx = idx + needle.length;
 
-  let pos = 0;
-  const toMark: Element[] = [];
-  for (const r of ranges) {
-    const raw = r.el.textContent || "";
-    const n = norm(raw);
-    if (!n) {
-      pos += 1; 
-      continue;
-    }
-    const start = hayNorm.indexOf(n, Math.max(0, pos - 2));
-    if (start >= 0) {
-      const end = start + n.length;
-      if (end > idx && start < endIdx) toMark.push(r.el);
-      pos = end + 1;
+  // Collect spans that overlap with the match range [idx, endIdx)
+  const toMark: HTMLElement[] = [];
+  for (const entry of entries) {
+    if (entry.normEnd > idx && entry.normStart < endIdx) {
+      toMark.push(entry.el);
     }
   }
 
+  // Apply highlight styling directly to the spans (no DOM restructuring)
+  // This preserves react-pdf's absolute positioning and avoids blur
   let first: HTMLElement | null = null;
   for (const el of toMark.slice(0, 24)) {
-    const text = el.textContent;
-    if (!text) continue;
-    const mark = document.createElement("mark");
-    mark.className = "citation-hl";
-    mark.style.background = "rgba(13, 148, 136, 0.35)";
-    mark.style.borderRadius = "2px";
-    mark.style.padding = "0 1px";
-    mark.textContent = text;
-    el.textContent = "";
-    el.appendChild(mark);
-    if (!first) first = mark;
+    el.classList.add("citation-hl");
+    el.style.background = "rgba(13, 148, 136, 0.25)";
+    el.style.borderRadius = "2px";
+    el.style.boxShadow = "0 0 0 2px rgba(13, 148, 136, 0.15)";
+    if (!first) first = el;
   }
   first?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
