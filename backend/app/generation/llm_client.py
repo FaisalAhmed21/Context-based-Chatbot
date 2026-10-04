@@ -14,7 +14,32 @@ from app.types import Citation, GenerationResult, RetrievedChunk
 
 logger = logging.getLogger(__name__)
 
+import re
+
+def _extract_best_snippet(text: str, query: str) -> str:
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    if not sentences:
+        return text.strip()[:160] + ("…" if len(text.strip()) > 160 else "")
+        
+    query_words = set(re.findall(r'\w+', query.lower()))
+    
+    best_score = -1
+    best_sentence = sentences[0]
+    
+    for sentence in sentences:
+        words = set(re.findall(r'\w+', sentence.lower()))
+        score = len(query_words.intersection(words))
+        if score > best_score:
+            best_score = score
+            best_sentence = sentence
+            
+    snippet = best_sentence.strip()
+    if len(snippet) > 160:
+        snippet = snippet[:160] + "…"
+    return snippet
+
 def _citations(
+    question: str,
     chunks: list[RetrievedChunk],
     document_names: dict[str, str],
 ) -> list[Citation]:
@@ -37,9 +62,9 @@ def _citations(
         key = (doc_id, page, ts_f)
         if key in seen:
             continue
-        snippet = rc.chunk.content.strip()
-        if len(snippet) > 160:
-            snippet = snippet[:160] + "…"
+            
+        snippet = _extract_best_snippet(rc.chunk.content, question)
+        
         seen[key] = Citation(
             document_id=doc_id,
             document_name=document_names.get(doc_id),
@@ -306,7 +331,7 @@ async def generate_answer(
 ) -> GenerationResult:
     settings = get_settings()
     document_names = document_names or {}
-    citations = _citations(chunks, document_names)
+    citations = _citations(question, chunks, document_names)
 
     if not chunks:
         return GenerationResult(
@@ -374,7 +399,7 @@ async def stream_generate_answer(
 
     settings = get_settings()
     document_names = document_names or {}
-    citations = _citations(chunks, document_names)
+    citations = _citations(question, chunks, document_names)
 
     if not chunks:
         yield GenerationResult(
