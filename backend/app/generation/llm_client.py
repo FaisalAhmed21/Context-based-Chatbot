@@ -38,6 +38,31 @@ def _extract_best_snippet(text: str, query: str) -> str:
         snippet = snippet[:160] + "…"
     return snippet
 
+def _filter_citations_from_answer(answer: str, all_citations: list[Citation], chunks: list[RetrievedChunk]) -> list[Citation]:
+    used = set()
+    for m in re.finditer(r'\[(\d+)\]', answer):
+        try:
+            used.add(int(m.group(1)))
+        except ValueError:
+            pass
+            
+    if not used:
+        return all_citations
+        
+    used_keys = set()
+    for idx in used:
+        if 1 <= idx <= len(chunks):
+            rc = chunks[idx - 1]
+            meta = rc.chunk.metadata or {}
+            ts = meta.get("timestamp_start")
+            try:
+                ts_f = float(ts) if ts is not None else None
+            except (TypeError, ValueError):
+                ts_f = None
+            used_keys.add((rc.chunk.document_id, rc.chunk.page_number, ts_f))
+            
+    return [c for c in all_citations if (c.document_id, c.page_number, c.timestamp_start) in used_keys]
+
 def _citations(
     question: str,
     chunks: list[RetrievedChunk],
@@ -371,7 +396,7 @@ async def generate_answer(
             refused = answer.strip() == REFUSAL_MESSAGE
             return GenerationResult(
                 answer=answer,
-                citations=[] if refused else citations,
+                citations=[] if refused else _filter_citations_from_answer(answer, citations, chunks),
                 refused=refused,
                 refusal_reason="prompt" if refused else None,
                 confidence=chunks[0].score if chunks else None,
@@ -451,7 +476,7 @@ async def stream_generate_answer(
     refused = full_answer.strip() == REFUSAL_MESSAGE
     yield GenerationResult(
         answer=full_answer,
-        citations=[] if refused else citations,
+        citations=[] if refused else _filter_citations_from_answer(full_answer, citations, chunks),
         refused=refused,
         refusal_reason="prompt" if refused else None,
         confidence=chunks[0].score if chunks else None,
