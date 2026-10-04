@@ -77,43 +77,37 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   ) as HTMLElement[];
   if (!spans.length) return;
 
-  // Build a precise character-offset map: for each span, record its
-  // [start, end) range within the concatenated normalized text.
-  // We insert a single space between spans to mirror natural word boundaries.
-  const entries: Array<{ normStart: number; normEnd: number; el: HTMLElement }> = [];
-  let fullNorm = "";
+  const spacelessNeedle = snippet.toLowerCase().replace(/\s+/g, "").slice(0, 100);
+  if (spacelessNeedle.length < 8) return;
+
+  const charToSpan: HTMLElement[] = [];
+  let spacelessHaystack = "";
+  
   for (const el of spans) {
-    const raw = el.textContent || "";
-    const n = norm(raw);
-    if (!n) continue;
-    if (fullNorm.length > 0) fullNorm += " ";
-    const start = fullNorm.length;
-    fullNorm += n;
-    entries.push({ normStart: start, normEnd: fullNorm.length, el });
-  }
-
-  // Find the needle in the concatenated text
-  let idx = fullNorm.indexOf(needle);
-  if (idx < 0) {
-    // Fallback: try a shorter prefix match
-    const short = needle.slice(0, Math.min(40, needle.length));
-    idx = fullNorm.indexOf(short);
-    if (idx < 0) return;
-  }
-  const endIdx = idx + needle.length;
-
-  // Collect spans that overlap with the match range [idx, endIdx)
-  const toMark: HTMLElement[] = [];
-  for (const entry of entries) {
-    if (entry.normEnd > idx && entry.normStart < endIdx) {
-      toMark.push(entry.el);
+    const text = el.textContent || "";
+    const spacelessText = text.toLowerCase().replace(/\s+/g, "");
+    spacelessHaystack += spacelessText;
+    for (let i = 0; i < spacelessText.length; i++) {
+      charToSpan.push(el);
     }
   }
 
-  // Apply highlight styling directly to the spans (no DOM restructuring)
-  // This preserves react-pdf's absolute positioning and avoids blur
+  let idx = spacelessHaystack.indexOf(spacelessNeedle);
+  if (idx < 0) {
+    const short = spacelessNeedle.slice(0, Math.min(35, spacelessNeedle.length));
+    idx = spacelessHaystack.indexOf(short);
+    if (idx < 0) return;
+  }
+  
+  const endIdx = idx + spacelessNeedle.length;
+
+  const toMark = new Set<HTMLElement>();
+  for (let i = idx; i < endIdx && i < charToSpan.length; i++) {
+    toMark.add(charToSpan[i]);
+  }
+
   let first: HTMLElement | null = null;
-  for (const el of toMark.slice(0, 24)) {
+  for (const el of Array.from(toMark).slice(0, 35)) {
     el.classList.add("citation-hl");
     el.style.background = "rgba(13, 148, 136, 0.25)";
     el.style.borderRadius = "2px";
