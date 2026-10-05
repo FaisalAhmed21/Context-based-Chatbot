@@ -73,7 +73,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
     root.querySelectorAll(".react-pdf__Page__textContent span")
   ) as HTMLElement[];
   if (!unsortedSpans.length) {
-    console.debug("[highlight] no spans found");
+    console.log("[highlight] no spans found");
     return;
   }
 
@@ -85,7 +85,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
 
   const spacelessNeedle = snippet.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 100);
   if (spacelessNeedle.length < 8) {
-    console.debug("[highlight] needle too short:", spacelessNeedle);
+    console.log("[highlight] needle too short:", spacelessNeedle);
     return;
   }
 
@@ -101,21 +101,21 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
     }
   }
 
-  console.debug("[highlight] haystack length:", spacelessHaystack.length, "needle:", spacelessNeedle.slice(0, 40));
+  console.log("[highlight] haystack length:", spacelessHaystack.length, "needle:", spacelessNeedle.slice(0, 40));
 
   let idx = spacelessHaystack.indexOf(spacelessNeedle);
   if (idx < 0) {
     const short = spacelessNeedle.slice(0, Math.min(30, spacelessNeedle.length));
-    console.debug("[highlight] full needle not found, trying short:", short);
+    console.log("[highlight] full needle not found, trying short:", short);
     idx = spacelessHaystack.indexOf(short);
     if (idx < 0) {
-      console.debug("[highlight] FAILED - short needle also not found in haystack");
-      console.debug("[highlight] haystack sample:", spacelessHaystack.slice(0, 300));
+      console.log("[highlight] FAILED - short needle also not found in haystack");
+      console.log("[highlight] haystack sample:", spacelessHaystack.slice(0, 300));
       return;
     }
   }
   
-  console.debug("[highlight] MATCH at index", idx);
+  console.log("[highlight] MATCH at index", idx);
   const endIdx = idx + spacelessNeedle.length;
 
   const toMark = new Set<HTMLElement>();
@@ -131,7 +131,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
     el.style.boxShadow = "0 0 0 2px rgba(13, 148, 136, 0.15)";
     if (!first) first = el;
   }
-  console.debug("[highlight] highlighted", toMark.size, "spans");
+  console.log("[highlight] highlighted", toMark.size, "spans");
   first?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
@@ -190,7 +190,7 @@ export function PDFViewer({
       ".react-pdf__Page__textContent span"
     );
     if (!spans.length) return;
-    console.debug("[highlight] applying highlight for:", highlightTextRef.current?.slice(0, 50));
+    console.log("[highlight] applying highlight for:", highlightTextRef.current?.slice(0, 50));
     highlightSnippetInLayer(pageWrapRef.current, highlightTextRef.current);
   }, []);
 
@@ -209,7 +209,7 @@ export function PDFViewer({
           ".react-pdf__Page__textContent span"
         );
         if (spans.length > 0) {
-          console.debug("[highlight] useEffect: found", spans.length, "spans");
+          console.log("[highlight] useEffect: found", spans.length, "spans");
           highlightSnippetInLayer(pageWrapRef.current, highlightText);
           return;
         }
@@ -218,7 +218,7 @@ export function PDFViewer({
       if (attempts < maxAttempts) {
         setTimeout(tryHighlight, 200);
       } else {
-        console.debug("[highlight] useEffect: gave up after", attempts, "attempts");
+        console.log("[highlight] useEffect: gave up after", attempts, "attempts");
       }
     };
 
