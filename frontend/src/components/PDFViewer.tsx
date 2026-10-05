@@ -48,33 +48,16 @@ function norm(s: string): string {
   return s.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | undefined) {
-  // Remove previous highlights — we use CSS classes instead of <mark> elements
-  // to avoid disrupting react-pdf's absolute-positioned text layer (which causes blur)
-  root.querySelectorAll(".citation-hl").forEach((el) => {
-    el.classList.remove("citation-hl");
-    (el as HTMLElement).style.removeProperty("background");
-    (el as HTMLElement).style.removeProperty("border-radius");
-    (el as HTMLElement).style.removeProperty("box-shadow");
-  });
-  // Also clean up legacy <mark> elements from previous version
-  root.querySelectorAll("mark.citation-hl").forEach((el) => {
-    const parent = el.parentNode;
-    if (!parent) return;
-    parent.replaceChild(document.createTextNode(el.textContent || ""), el);
-    parent.normalize();
-  });
+type Rect = { top: number; left: number; width: number; height: number };
 
-  if (!snippet) return;
-  const needle = norm(snippet).slice(0, 120);
-  if (needle.length < 8) return;
-
+function getHighlightRects(root: HTMLElement, snippet: string | null | undefined): Rect[] {
+  if (!snippet) return [];
   const unsortedSpans = Array.from(
     root.querySelectorAll(".react-pdf__Page__textContent span")
   ) as HTMLElement[];
   if (!unsortedSpans.length) {
     console.log("[highlight] no spans found");
-    return;
+    return [];
   }
 
   const spans = unsortedSpans.sort((a, b) => {
@@ -86,7 +69,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   const spacelessNeedle = snippet.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 100);
   if (spacelessNeedle.length < 8) {
     console.log("[highlight] needle too short:", spacelessNeedle);
-    return;
+    return [];
   }
 
   const charToSpan: HTMLElement[] = [];
@@ -110,8 +93,7 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
     idx = spacelessHaystack.indexOf(short);
     if (idx < 0) {
       console.log("[highlight] FAILED - short needle also not found in haystack");
-      console.log("[highlight] haystack sample:", spacelessHaystack.slice(0, 300));
-      return;
+      return [];
     }
   }
   
@@ -123,22 +105,23 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
     toMark.add(charToSpan[i]);
   }
 
-  let first: HTMLElement | null = null;
+  const rects: Rect[] = [];
+  // Calculate relative to the pageWrapRef which is our positioning container
+  const rootRect = root.getBoundingClientRect();
+  
   for (const el of Array.from(toMark).slice(0, 35)) {
-    el.classList.add("citation-hl");
-    // Force visibility and background aggressively
-    el.style.backgroundColor = "rgba(13, 148, 136, 0.25)";
-    el.style.opacity = "1";
-    el.style.visibility = "visible";
-    el.style.borderRadius = "2px";
-    el.style.boxShadow = "0 0 0 2px rgba(13, 148, 136, 0.15)";
-    
-    // Some browsers/pdf.js versions hide the text layer via pointer-events or z-index
-    el.style.zIndex = "10"; 
-    if (!first) first = el;
+    const rect = el.getBoundingClientRect();
+    // Even if width/height is 0 (due to react-pdf css tricks), we must render something
+    rects.push({
+      top: rect.top - rootRect.top + root.scrollTop,
+      left: rect.left - rootRect.left + root.scrollLeft,
+      width: rect.width > 0 ? rect.width : 50,
+      height: rect.height > 0 ? rect.height : 20,
+    });
   }
-  console.log("[highlight] highlighted", toMark.size, "spans");
-  first?.scrollIntoView({ behavior: "smooth", block: "center" });
+  
+  console.log("[highlight] found", rects.length, "highlight rects");
+  return rects;
 }
 
 export function PDFViewer({
@@ -155,6 +138,7 @@ export function PDFViewer({
   const [numPages, setNumPages] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
+  const [highlightRects, setHighlightRects] = useState<Rect[]>([]);
   const videoRef = useRef<HTMLMediaElement | null>(null);
   const pageWrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -191,18 +175,37 @@ export function PDFViewer({
   highlightKeyRef.current = highlightKey;
 
   const applyHighlight = useCallback(() => {
-    if (!pageWrapRef.current || !highlightTextRef.current) return;
+    if (!pageWrapRef.current || !highlightTextRef.current) {
+      setHighlightRects([]);
+      return;
+    }
     const spans = pageWrapRef.current.querySelectorAll(
       ".react-pdf__Page__textContent span"
     );
-    if (!spans.length) return;
-    console.log("[highlight] applying highlight for:", highlightTextRef.current?.slice(0, 50));
-    highlightSnippetInLayer(pageWrapRef.current, highlightTextRef.current);
+    if (!spans.length) {
+      setHighlightRects([]);
+      return;
+    }
+    
+    console.log("[highlight] measuring highlight for:", highlightTextRef.current?.slice(0, 50));
+    const rects = getHighlightRects(pageWrapRef.current, highlightTextRef.current);
+    setHighlightRects(rects);
+    
+    if (rects.length > 0 && pageWrapRef.current) {
+      const first = rects[0];
+      pageWrapRef.current.scrollTo({
+        top: Math.max(0, first.top - 100),
+        behavior: "smooth"
+      });
+    }
   }, []);
 
   // When highlightKey/highlightText/page changes, try highlighting with retries
   useEffect(() => {
-    if (!pdfMode || !highlightKey || !highlightText) return;
+    if (!pdfMode || !highlightKey || !highlightText) {
+      setHighlightRects([]);
+      return;
+    }
 
     let cancelled = false;
     let attempts = 0;
@@ -216,7 +219,7 @@ export function PDFViewer({
         );
         if (spans.length > 0) {
           console.log("[highlight] useEffect: found", spans.length, "spans");
-          highlightSnippetInLayer(pageWrapRef.current, highlightText);
+          applyHighlight();
           return;
         }
       }
@@ -232,7 +235,7 @@ export function PDFViewer({
     setTimeout(tryHighlight, 100);
 
     return () => { cancelled = true; };
-  }, [pdfMode, highlightKey, highlightText, page]);
+  }, [pdfMode, highlightKey, highlightText, page, applyHighlight]);
 
   const onLoadSuccess = useCallback(({ numPages: n }: { numPages: number }) => {
     setNumPages(n);
@@ -389,6 +392,24 @@ export function PDFViewer({
                 }}
               />
             </Document>
+
+            {/* Render absolute overlay for highlights */}
+            {highlightRects.length > 0 && (
+              <div className="pointer-events-none absolute inset-0 z-50 overflow-hidden">
+                {highlightRects.map((r, i) => (
+                  <div
+                    key={i}
+                    className="absolute bg-[#0d9488]/30 rounded-[2px] shadow-[0_0_0_2px_rgba(13,148,136,0.2)] mix-blend-multiply"
+                    style={{
+                      top: r.top,
+                      left: r.left,
+                      width: r.width,
+                      height: r.height,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
