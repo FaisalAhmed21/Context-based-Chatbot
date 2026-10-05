@@ -141,6 +141,7 @@ export function PDFViewer({
   const [highlightRects, setHighlightRects] = useState<Rect[]>([]);
   const videoRef = useRef<HTMLMediaElement | null>(null);
   const pageWrapRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const fileUrl = documentId ? documentFileUrl(documentId) : null;
   const imageMode = isImageName(filename, contentType);
@@ -191,9 +192,9 @@ export function PDFViewer({
     const rects = getHighlightRects(pageWrapRef.current, highlightTextRef.current);
     setHighlightRects(rects);
     
-    if (rects.length > 0 && pageWrapRef.current) {
+    if (rects.length > 0 && scrollContainerRef.current) {
       const first = rects[0];
-      pageWrapRef.current.scrollTo({
+      scrollContainerRef.current.scrollTo({
         top: Math.max(0, first.top - 100),
         behavior: "smooth"
       });
@@ -286,7 +287,10 @@ export function PDFViewer({
         )}
       </div>
 
-      <div className="relative flex flex-1 items-start justify-center overflow-auto bg-[radial-gradient(ellipse_at_top,_#f5f5f4,_#e7e5e4)] p-4">
+      <div 
+        ref={scrollContainerRef}
+        className="relative flex flex-1 items-start justify-center overflow-auto bg-[radial-gradient(ellipse_at_top,_#f5f5f4,_#e7e5e4)] p-4"
+      >
         <div className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(to_right,#444_1px,transparent_1px),linear-gradient(to_bottom,#444_1px,transparent_1px)] [background-size:24px_24px]" />
 
         {!fileUrl && (
@@ -399,12 +403,14 @@ export function PDFViewer({
                 {highlightRects.map((r, i) => (
                   <div
                     key={i}
-                    className="absolute bg-[#0d9488]/30 rounded-[2px] shadow-[0_0_0_2px_rgba(13,148,136,0.2)] mix-blend-multiply"
+                    className="absolute rounded-[2px] mix-blend-multiply"
                     style={{
                       top: r.top,
                       left: r.left,
                       width: r.width,
                       height: r.height,
+                      backgroundColor: "rgba(13, 148, 136, 0.3)",
+                      boxShadow: "0 0 0 2px rgba(13, 148, 136, 0.2)",
                     }}
                   />
                 ))}
