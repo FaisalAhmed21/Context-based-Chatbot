@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 def get_qdrant() -> QdrantClient:
     settings = get_settings()
     if settings.qdrant_url.strip():
-        logger.info("Qdrant client → %s", settings.qdrant_url)
+        logger.info("Qdrant client -> %s", settings.qdrant_url)
         kwargs: dict[str, Any] = {"url": settings.qdrant_url, "timeout": 30}
         if settings.qdrant_api_key.strip():
             kwargs["api_key"] = settings.qdrant_api_key.strip()
         return QdrantClient(**kwargs)
     path = Path(settings.qdrant_path)
     path.mkdir(parents=True, exist_ok=True)
-    logger.info("Qdrant local path → %s", path.resolve())
+    logger.info("Qdrant local path -> %s", path.resolve())
     return QdrantClient(path=str(path))
 
 def ensure_collection(dim: int | None = None) -> None:

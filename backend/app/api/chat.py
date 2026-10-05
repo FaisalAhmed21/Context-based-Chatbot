@@ -90,13 +90,20 @@ async def send_message(
         select(Message)
         .where(Message.session_id == session_id)
         .order_by(Message.created_at.desc())
-        .limit(6)
+        .limit(8)
     )
     history = [
         {"role": m.role, "content": m.content}
         for m in reversed(list(hist_rows.scalars().all()))
         if m.role in ("user", "assistant")
     ]
+    # Current user turn was just committed — exclude it so query rewrite sees prior turns only.
+    if (
+        history
+        and history[-1]["role"] == "user"
+        and history[-1]["content"] == body.content
+    ):
+        history = history[:-1]
 
     doc_ids = (
         [str(d) for d in body.document_ids] if body.document_ids else list(session.document_ids or [])

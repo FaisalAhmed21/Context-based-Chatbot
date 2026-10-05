@@ -7,7 +7,16 @@ import mimetypes
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Header, HTTPException, Query, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Header,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, HttpUrl
 from sqlalchemy import select
@@ -199,7 +208,7 @@ async def ingest_from_url(
     await db.commit()
     await db.refresh(doc)
 
-    logger.info("Queued URL ingest %s → %s", doc.id, url)
+    logger.info("Queued URL ingest %s -> %s", doc.id, url)
     background_tasks.add_task(run_ingestion, doc.id, SessionLocal)
     return _to_out(doc)
 

@@ -31,7 +31,7 @@ export function ChatWindow({
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2">
         {messages.length === 0 && (
           <p className="rounded-lg bg-[#F9F5F3]/50 px-4 py-3 text-sm text-stone-600">
-            Hello! I'm ready to answer any questions about your uploaded documents.
+            Hello! I&apos;m ready to answer any questions about your uploaded documents.
           </p>
         )}
         {messages.map((m, i) => (
@@ -57,7 +57,7 @@ export function ChatWindow({
                 i === messages.length - 1 &&
                 m.role === "assistant" &&
                 m.content === "Thinking…" && (
-                  <span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#F9F5F3]0" />
+                  <span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#B87A5D]" />
                 )}
               <p className="whitespace-pre-wrap">{m.content}</p>
               {!!m.citations?.length && (

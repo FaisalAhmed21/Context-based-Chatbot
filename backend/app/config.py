@@ -4,6 +4,7 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
 
@@ -34,7 +35,9 @@ class Settings(BaseSettings):
 
     relevance_threshold: float = 0.35
 
-    rerank_threshold: float = -5.0
+    # Cross-encoder logits; ~0+ typically means relevant. Keep slightly negative
+    # for recall, but relevance_gate also applies a floor for bare rerank passes.
+    rerank_threshold: float = -2.0
 
     groundedness_enabled: bool = True
 

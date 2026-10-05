@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json as _json
 import logging
 from collections.abc import AsyncIterator
@@ -9,12 +10,27 @@ from collections.abc import AsyncIterator
 import httpx
 
 from app.config import get_settings
-from app.generation.prompt import REFUSAL_MESSAGE, build_messages
+from app.generation.prompt import REFUSAL_MESSAGE, build_messages, is_refusal_text
 from app.types import Citation, GenerationResult, RetrievedChunk
 
 logger = logging.getLogger(__name__)
 
 import re
+
+_RETRY_AFTER_RE = re.compile(r"try again in (\d+(?:\.\d+)?)s", re.IGNORECASE)
+
+
+def _is_rate_limit_error(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return "429" in msg or "rate limit" in msg or "quota" in msg
+
+
+async def _sleep_for_rate_limit(exc: BaseException, attempt: int) -> None:
+    m = _RETRY_AFTER_RE.search(str(exc))
+    wait = float(m.group(1)) + 1.5 if m else min(5.0 * (2**attempt), 60.0)
+    logger.warning("LLM rate limited; retrying in %.1fs", wait)
+    await asyncio.sleep(wait)
+
 
 def _extract_best_snippet(text: str, query: str) -> str:
     sentences = re.split(r'(?<=[.!?])\s+', text)
@@ -122,23 +138,31 @@ async def _chat_groq(
     *,
     temperature: float = 0.1,
 ) -> str:
-    async with httpx.AsyncClient(timeout=90.0) as client:
-        resp = await client.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": temperature,
-            },
-        )
-        if resp.status_code >= 400:
-            raise RuntimeError(f"Groq error {resp.status_code}: {resp.text[:400]}")
-        data = resp.json()
-        return data["choices"][0]["message"]["content"].strip()
+    last_err: Exception | None = None
+    for attempt in range(4):
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature,
+                },
+            )
+            if resp.status_code >= 400:
+                err = RuntimeError(f"Groq error {resp.status_code}: {resp.text[:400]}")
+                if resp.status_code == 429 or _is_rate_limit_error(err):
+                    last_err = err
+                    await _sleep_for_rate_limit(err, attempt)
+                    continue
+                raise err
+            data = resp.json()
+            return data["choices"][0]["message"]["content"].strip()
+    raise last_err or RuntimeError("Groq rate limit retries exhausted")
 
 async def _chat_gemini(
     messages: list[dict[str, str]],
@@ -167,13 +191,21 @@ async def _chat_gemini(
         f"https://generativelanguage.googleapis.com/v1beta/models/"
         f"{model}:generateContent"
     )
-    async with httpx.AsyncClient(timeout=90.0) as client:
-        resp = await client.post(url, params={"key": api_key}, json=body)
-        if resp.status_code >= 400:
-            raise RuntimeError(f"Gemini error {resp.status_code}: {resp.text[:400]}")
-        data = resp.json()
-        parts = data["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts).strip()
+    last_err: Exception | None = None
+    for attempt in range(4):
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post(url, params={"key": api_key}, json=body)
+            if resp.status_code >= 400:
+                err = RuntimeError(f"Gemini error {resp.status_code}: {resp.text[:400]}")
+                if resp.status_code == 429 or _is_rate_limit_error(err):
+                    last_err = err
+                    await _sleep_for_rate_limit(err, attempt)
+                    continue
+                raise err
+            data = resp.json()
+            parts = data["candidates"][0]["content"]["parts"]
+            return "".join(p.get("text", "") for p in parts).strip()
+    raise last_err or RuntimeError("Gemini rate limit retries exhausted")
 
 async def _call_provider(
     provider: str,
@@ -200,43 +232,42 @@ async def _stream_groq(
     temperature: float = 0.1,
 ) -> AsyncIterator[str]:
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        async with client.stream(
-            "POST",
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": messages,
-                "temperature": temperature,
-                "stream": True,
-            },
-        ) as resp:
-            if resp.status_code >= 400:
-                body = await resp.aread()
-                raise RuntimeError(f"Groq stream error {resp.status_code}: {body.decode()[:400]}")
-            buf = ""
-            async for raw in resp.aiter_text():
-                buf += raw
-                while "\n" in buf:
-                    line, buf = buf.split("\n", 1)
-                    line = line.strip()
-                    if not line or not line.startswith("data:"):
-                        continue
-                    payload = line[5:].strip()
-                    if payload == "[DONE]":
-                        return
-                    try:
-                        obj = _json.loads(payload)
-                        delta = obj["choices"][0].get("delta") or {}
-                        token = delta.get("content")
-                        if token:
-                            yield token
-                    except (KeyError, IndexError, _json.JSONDecodeError):
-                        continue
+    async with httpx.AsyncClient(timeout=120.0) as client, client.stream(
+        "POST",
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "stream": True,
+        },
+    ) as resp:
+        if resp.status_code >= 400:
+            body = await resp.aread()
+            raise RuntimeError(f"Groq stream error {resp.status_code}: {body.decode()[:400]}")
+        buf = ""
+        async for raw in resp.aiter_text():
+            buf += raw
+            while "\n" in buf:
+                line, buf = buf.split("\n", 1)
+                line = line.strip()
+                if not line or not line.startswith("data:"):
+                    continue
+                payload = line[5:].strip()
+                if payload == "[DONE]":
+                    return
+                try:
+                    obj = _json.loads(payload)
+                    delta = obj["choices"][0].get("delta") or {}
+                    token = delta.get("content")
+                    if token:
+                        yield token
+                except (KeyError, IndexError, _json.JSONDecodeError):
+                    continue
 
 async def _stream_gemini(
     messages: list[dict[str, str]],
@@ -266,35 +297,34 @@ async def _stream_gemini(
         f"https://generativelanguage.googleapis.com/v1beta/models/"
         f"{model}:streamGenerateContent"
     )
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        async with client.stream(
-            "POST", url, params={"key": api_key, "alt": "sse"}, json=body,
-        ) as resp:
-            if resp.status_code >= 400:
-                body_bytes = await resp.aread()
-                raise RuntimeError(
-                    f"Gemini stream error {resp.status_code}: {body_bytes.decode()[:400]}"
-                )
-            buf = ""
-            async for raw in resp.aiter_text():
-                buf += raw
-                while "\n" in buf:
-                    line, buf = buf.split("\n", 1)
-                    line = line.strip()
-                    if not line or not line.startswith("data:"):
-                        continue
-                    payload = line[5:].strip()
-                    if not payload:
-                        continue
-                    try:
-                        obj = _json.loads(payload)
-                        parts = obj.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-                        for p in parts:
-                            text = p.get("text")
-                            if text:
-                                yield text
-                    except (KeyError, IndexError, _json.JSONDecodeError):
-                        continue
+    async with httpx.AsyncClient(timeout=120.0) as client, client.stream(
+        "POST", url, params={"key": api_key, "alt": "sse"}, json=body,
+    ) as resp:
+        if resp.status_code >= 400:
+            body_bytes = await resp.aread()
+            raise RuntimeError(
+                f"Gemini stream error {resp.status_code}: {body_bytes.decode()[:400]}"
+            )
+        buf = ""
+        async for raw in resp.aiter_text():
+            buf += raw
+            while "\n" in buf:
+                line, buf = buf.split("\n", 1)
+                line = line.strip()
+                if not line or not line.startswith("data:"):
+                    continue
+                payload = line[5:].strip()
+                if not payload:
+                    continue
+                try:
+                    obj = _json.loads(payload)
+                    parts = obj.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                    for p in parts:
+                        text = p.get("text")
+                        if text:
+                            yield text
+                except (KeyError, IndexError, _json.JSONDecodeError):
+                    continue
 
 async def _stream_provider(
     provider: str,
@@ -353,6 +383,7 @@ async def generate_answer(
     chunks: list[RetrievedChunk],
     *,
     document_names: dict[str, str] | None = None,
+    chat_history: list[dict[str, str]] | None = None,
 ) -> GenerationResult:
     settings = get_settings()
     document_names = document_names or {}
@@ -382,26 +413,26 @@ async def generate_answer(
             confidence=chunks[0].score if chunks else None,
         )
 
-    messages = build_messages(question, chunks)
+    messages = build_messages(question, chunks, chat_history=chat_history)
     errors: list[str] = []
+    tried: set[str] = set()
 
     for provider, model in ((primary, primary_model), (fallback, fallback_model)):
-        if provider.lower() == primary.lower() and provider.lower() == fallback.lower():
-
-            pass
-        if not _provider_key(provider):
+        key = f"{provider.lower()}::{model}"
+        if key in tried or not _provider_key(provider):
             continue
+        tried.add(key)
         try:
             answer = await _call_provider(provider, model, messages)
-            refused = answer.strip() == REFUSAL_MESSAGE
+            refused = is_refusal_text(answer)
             return GenerationResult(
-                answer=answer,
+                answer=REFUSAL_MESSAGE if refused else answer,
                 citations=[] if refused else _filter_citations_from_answer(answer, citations, chunks),
                 refused=refused,
                 refusal_reason="prompt" if refused else None,
                 confidence=chunks[0].score if chunks else None,
             )
-        except Exception as exc:  
+        except Exception as exc:
             logger.warning("LLM provider %s failed: %s", provider, exc)
             errors.append(f"{provider}: {exc}")
 
@@ -411,7 +442,7 @@ async def generate_answer(
             + (" | ".join(errors) if errors else "Check GROQ_API_KEY / GEMINI_API_KEY.")
         ),
         citations=[],
-        refused=True,
+        refused=False,
         refusal_reason="provider_error",
     )
 
@@ -420,6 +451,7 @@ async def stream_generate_answer(
     chunks: list[RetrievedChunk],
     *,
     document_names: dict[str, str] | None = None,
+    chat_history: list[dict[str, str]] | None = None,
 ) -> AsyncIterator[str | GenerationResult]:
 
     settings = get_settings()
@@ -447,35 +479,53 @@ async def stream_generate_answer(
         )
         return
 
-    messages = build_messages(question, chunks)
+    # When groundedness is on, avoid streaming a draft that may later be refused.
+    if settings.groundedness_enabled:
+        result = await generate_answer(
+            question,
+            chunks,
+            document_names=document_names,
+            chat_history=chat_history,
+        )
+        yield result
+        return
+
+    messages = build_messages(question, chunks, chat_history=chat_history)
     full_answer = ""
     streamed = False
+    tried: set[str] = set()
 
     for provider, model in (
         (primary, settings.llm_model),
         (fallback, settings.llm_fallback_model),
     ):
-        if not _provider_key(provider):
+        key = f"{provider.lower()}::{model}"
+        if key in tried or not _provider_key(provider):
             continue
+        tried.add(key)
         try:
             async for token in _stream_provider(provider, model, messages):
                 full_answer += token
                 yield token
             streamed = True
             break
-        except Exception as exc:  
+        except Exception as exc:
             logger.warning("Stream LLM %s failed: %s", provider, exc)
             full_answer = ""
 
     if not streamed:
-
-        result = await generate_answer(question, chunks, document_names=document_names)
+        result = await generate_answer(
+            question,
+            chunks,
+            document_names=document_names,
+            chat_history=chat_history,
+        )
         yield result
         return
 
-    refused = full_answer.strip() == REFUSAL_MESSAGE
+    refused = is_refusal_text(full_answer)
     yield GenerationResult(
-        answer=full_answer,
+        answer=REFUSAL_MESSAGE if refused else full_answer,
         citations=[] if refused else _filter_citations_from_answer(full_answer, citations, chunks),
         refused=refused,
         refusal_reason="prompt" if refused else None,

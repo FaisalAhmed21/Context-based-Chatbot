@@ -76,7 +76,7 @@ async def build_graph_for_document(document_id: uuid.UUID) -> dict[str, int]:
         blob = "\n\n".join(
             f"[chunk {c.chunk_index} id={c.id}]\n{(c.content or '')[:600]}" for c in sample
         )
-        prompt = f
+        prompt = blob
         try:
             raw = await complete_chat(
                 [

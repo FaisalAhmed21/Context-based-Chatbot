@@ -11,6 +11,7 @@ from app.ingestion.video import VideoLoader, is_video_path
 from app.ingestion.web import WebLoader
 from app.types import DocumentLoader
 
+
 def get_loader_for_path(file_path: str) -> DocumentLoader:
     path = Path(file_path)
     suffix = path.suffix.lower()

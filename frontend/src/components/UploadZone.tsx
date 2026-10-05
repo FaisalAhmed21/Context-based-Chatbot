@@ -8,7 +8,7 @@ type Props = {
   onUploaded: (doc: DocumentOut) => void;
 };
 
-const STAGES = ["parsing", "chunking", "embedding", "ready"] as const;
+
 const ACCEPT =
   ".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.markdown,.csv,.html,application/pdf,image/*,text/*";
 

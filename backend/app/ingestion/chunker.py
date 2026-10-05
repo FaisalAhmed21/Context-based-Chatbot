@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from app.types import Chunk, ElementType, RawElement
 
+
 def fixed_size_chunk(
     elements: list[RawElement],
     document_id: str,
@@ -200,6 +201,7 @@ def structure_aware_chunk(
     return chunks
 
 import logging
+
 from app.config import get_settings
 from app.generation.llm_client import complete_chat, has_any_llm_key
 
@@ -235,7 +237,14 @@ async def apply_contextual_prefix(
             prefix = ", ".join(bits) + ".\n\n"
             ch.contextualized_content = prefix + ch.content
 
-    if not settings.contextual_retrieval_llm or not has_any_llm_key():
+    total_chars = sum(len(c.content or "") for c in chunks)
+    # LLM prefixes help large docs but burn API quota on small fixtures / single images.
+    if (
+        not settings.contextual_retrieval_llm
+        or not has_any_llm_key()
+        or len(chunks) <= 10
+        or total_chars < 12_000
+    ):
         _apply_heuristic(chunks)
         return chunks
 

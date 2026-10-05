@@ -19,7 +19,7 @@ class AgentState(TypedDict, total=False):
 
 def langgraph_available() -> bool:
     try:
-        import langgraph  
+        import langgraph
 
         return True
     except ImportError:

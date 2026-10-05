@@ -69,7 +69,14 @@ def fetch_url_text(url: str, *, timeout: float = 30.0) -> tuple[str, str]:
     with httpx.Client(
         timeout=timeout,
         follow_redirects=True,
-        headers={"User-Agent": "GroundedRAG/1.0 (+local)"},
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; OmniCentricBot/1.0; +https://localhost) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
     ) as client:
         resp = client.get(url)
     if resp.status_code >= 400:
@@ -121,18 +128,31 @@ def _text_to_elements(
     if not blocks:
         blocks = [text]
 
-    blocks = blocks[:80]
+    # Merge tiny fragments so BM25/dense get coherent passages; keep long pages.
+    merged: list[str] = []
+    buf = ""
+    for block in blocks:
+        if len(buf) + len(block) + 2 <= 1800:
+            buf = f"{buf}\n\n{block}".strip() if buf else block
+        else:
+            if buf:
+                merged.append(buf)
+            buf = block
+    if buf:
+        merged.append(buf)
+
+    merged = merged[:200]
     elements: list[RawElement] = []
-    for i, block in enumerate(blocks, start=1):
+    for i, block in enumerate(merged, start=1):
         elements.append(
             RawElement(
                 type=ElementType.TEXT,
-                content=block[:4000],
+                content=block[:5000],
                 page_number=1,
                 source_id=source_id,
                 section_title=title if i == 1 else f"{title} · §{i}",
                 metadata={"title": title, "url": url, "source": "web"},
             )
         )
-    logger.info("Web page '%s' → %d blocks", title, len(elements))
+    logger.info("Web page '%s' -> %d blocks", title, len(elements))
     return elements

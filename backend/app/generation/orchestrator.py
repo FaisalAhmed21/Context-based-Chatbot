@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator
 from app.config import get_settings
 from app.types import GenerationResult
 
+
 async def answer_question(
     question: str,
     *,

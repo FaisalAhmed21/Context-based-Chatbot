@@ -137,7 +137,12 @@ async def answer_question_agentic(
     if gate is not None:
         return gate
 
-    result = await generate_answer(question, ranked, document_names=document_names)
+    result = await generate_answer(
+        question,
+        ranked,
+        document_names=document_names,
+        chat_history=chat_history,
+    )
     if result.refused:
         return result
 
@@ -150,7 +155,12 @@ async def answer_question_agentic(
         if follow:
             ranked2 = await _retrieve(follow, document_ids=document_ids)
             ranked = _merge_ranked(ranked, ranked2)
-            result = await generate_answer(question, ranked, document_names=document_names)
+            result = await generate_answer(
+                question,
+                ranked,
+                document_names=document_names,
+                chat_history=chat_history,
+            )
             if result.refused:
                 return result
             bad = await groundedness_check(result.answer, ranked, question=question)
@@ -182,16 +192,18 @@ async def stream_answer_question_agentic(
     final_result: GenerationResult | None = None
 
     async for item in stream_generate_answer(
-        question, ranked, document_names=document_names,
+        question,
+        ranked,
+        document_names=document_names,
+        chat_history=chat_history,
     ):
         if isinstance(item, str):
             full_answer += item
-            yield item  
+            yield item
         elif isinstance(item, GenerationResult):
             final_result = item
 
     if final_result is None:
-
         final_result = GenerationResult(
             answer=full_answer, refused=False,
         )
@@ -202,7 +214,6 @@ async def stream_answer_question_agentic(
 
     bad = await groundedness_check(final_result.answer, ranked, question=question)
     if bad is not None and settings.agentic_enabled:
-
         follow = await refine_retrieval_query(
             f"{question}\nPrior answer was insufficiently grounded.",
             ranked,
@@ -210,7 +221,12 @@ async def stream_answer_question_agentic(
         if follow:
             ranked2 = await _retrieve(follow, document_ids=document_ids)
             ranked = _merge_ranked(ranked, ranked2)
-            corrected = await generate_answer(question, ranked, document_names=document_names)
+            corrected = await generate_answer(
+                question,
+                ranked,
+                document_names=document_names,
+                chat_history=chat_history,
+            )
             if not corrected.refused:
                 bad = await groundedness_check(corrected.answer, ranked, question=question)
                 if bad is None:

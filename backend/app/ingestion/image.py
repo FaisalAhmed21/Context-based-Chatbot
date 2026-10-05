@@ -19,9 +19,14 @@ _IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
 def is_image_path(path: str | Path) -> bool:
     return Path(path).suffix.lower() in _IMAGE_EXT
 
-def _caption_gemini_sync(file_path: Path, mime: str, api_key: str) -> str:
+def _caption_gemini_sync(
+    file_path: Path,
+    mime: str,
+    api_key: str,
+    *,
+    model: str = "gemini-3.8-flash",
+) -> str:
     data = base64.b64encode(file_path.read_bytes()).decode("ascii")
-    model = "gemini-3.6-flash"
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
         f"{model}:generateContent"
@@ -32,9 +37,9 @@ def _caption_gemini_sync(file_path: Path, mime: str, api_key: str) -> str:
                 "parts": [
                     {
                         "text": (
-                            "Describe this image thoroughly for a document search index. "
-                            "Include visible text (OCR), objects, layout, and any data "
-                            "that someone might ask about. Be factual; do not invent."
+                            "Transcribe ALL visible text exactly (OCR first). "
+                            "Preserve labels, numbers, units, dates, and product names. "
+                            "Then briefly note non-text visuals. Be factual; do not invent."
                         )
                     },
                     {"inline_data": {"mime_type": mime, "data": data}},
@@ -52,7 +57,7 @@ def _caption_gemini_sync(file_path: Path, mime: str, api_key: str) -> str:
 
 def _caption_groq_sync(file_path: Path, mime: str, api_key: str) -> str:
     data = base64.b64encode(file_path.read_bytes()).decode("ascii")
-    model = "meta-llama/llama-4-scout-17b-16e-instruct"
+    model = "llama-3.2-90b-vision-preview"
     payload = {
         "model": model,
         "messages": [
@@ -62,8 +67,9 @@ def _caption_groq_sync(file_path: Path, mime: str, api_key: str) -> str:
                     {
                         "type": "text",
                         "text": (
-                            "Describe this image thoroughly for a document search index. "
-                            "Include visible text and key visual details. Be factual."
+                            "Transcribe ALL visible text exactly (OCR first). "
+                            "Preserve labels, numbers, units, dates, and names. "
+                            "Then briefly note non-text visuals. Be factual; do not invent."
                         ),
                     },
                     {
@@ -103,21 +109,26 @@ class ImageLoader(DocumentLoader):
         mime = mimetypes.guess_type(str(path))[0] or "image/jpeg"
         settings = get_settings()
         caption = _fallback_caption(path)
+        gemini_model = (settings.llm_fallback_model or "gemini-3.8-flash").strip()
+        if not gemini_model.startswith("gemini"):
+            gemini_model = "gemini-3.8-flash"
 
         if settings.gemini_api_key:
             try:
-                caption = _caption_gemini_sync(path, mime, settings.gemini_api_key)
-            except Exception as exc:  
+                caption = _caption_gemini_sync(
+                    path, mime, settings.gemini_api_key, model=gemini_model
+                )
+            except Exception as exc:
                 logger.warning("Gemini image caption failed: %s", exc)
                 if settings.groq_api_key:
                     try:
                         caption = _caption_groq_sync(path, mime, settings.groq_api_key)
-                    except Exception as exc2:  
+                    except Exception as exc2:
                         logger.warning("Groq image caption failed: %s", exc2)
         elif settings.groq_api_key:
             try:
                 caption = _caption_groq_sync(path, mime, settings.groq_api_key)
-            except Exception as exc:  
+            except Exception as exc:
                 logger.warning("Groq image caption failed: %s", exc)
 
         logger.info("Image captioned (%d chars) for %s", len(caption), path.name)

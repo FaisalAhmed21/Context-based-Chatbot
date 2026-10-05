@@ -11,6 +11,7 @@ from app.db.session import init_db
 from app.ingestion.pipeline import ensure_upload_dir
 from app.logging_config import setup_logging
 
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     settings = get_settings()

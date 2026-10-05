@@ -9,6 +9,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+
 class ElementType(str, Enum):
     TEXT = "text"
     TABLE = "table"

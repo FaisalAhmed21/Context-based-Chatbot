@@ -1,0 +1,383 @@
+{
+  "total": 20,
+  "correct": 20,
+  "accuracy": 100.0,
+  "in_context_correct": 15,
+  "in_context_total": 15,
+  "ooc_correct": 5,
+  "ooc_total": 5,
+  "provider_errors": 0,
+  "document_ids": [
+    "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+    "5eca9c71-6410-4bb4-a501-48f0bd0ba402",
+    "eb1e2c1b-3995-403e-84e2-9614ada1c79f",
+    "cfd366d9-5528-456c-a3e8-b590168e71e9"
+  ],
+  "results": [
+    {
+      "question": "What is the version number of the OmniCentricBot Knowledge Brief?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The version number of the OmniCentricBot Knowledge Brief is 2.4.1 [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "chunk_id": "5ed88034-b639-4f04-ba7a-3e67285b5a02",
+          "snippet": "OmniCentricBot Knowledge Brief Version: 2.4.1 Published: 12 March 2025 Author: Dr.",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "Who authored the Knowledge Brief?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The Knowledge Brief was authored by Dr. Lena Ortiz [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": null,
+          "chunk_id": "5ed88034-b639-4f04-ba7a-3e67285b5a02",
+          "snippet": "OmniCentricBot Knowledge Brief Version: 2.4.1 Published: 12 March 2025 Author: Dr.",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the default relevance threshold?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The default relevance threshold is 0.35 [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "2. Core Numbers",
+          "chunk_id": "fe346ec4-8982-4f70-aa10-14fffbacd04f",
+          "snippet": "- Embedding model dimension: 384\n\n- Default relevance threshold: 0.35\n\n- Maximum upload size: 50 MB\n\n- Whisper free-tier media limit: 25 MB\n\n- Supported image f\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What embedding dimension is used?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The embedding model dimension is 384 [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "2. Core Numbers",
+          "chunk_id": "fe346ec4-8982-4f70-aa10-14fffbacd04f",
+          "snippet": "- Embedding model dimension: 384\n\n- Default relevance threshold: 0.35\n\n- Maximum upload size: 50 MB\n\n- Whisper free-tier media limit: 25 MB\n\n- Supported image f\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the internal project codename?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The internal project codename is \"Project Harborlight\" [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "5. Project Codename",
+          "chunk_id": "76f0dd0c-7cfe-49fa-bb62-f9c79a74308e",
+          "snippet": "Internal codename: Project Harborlight Primary contact email: harborlight@northwind-lab.example Launch city: Portland",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "Which city is listed as the launch city?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The launch city listed is Portland [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "5. Project Codename",
+          "chunk_id": "76f0dd0c-7cfe-49fa-bb62-f9c79a74308e",
+          "snippet": "Internal codename: Project Harborlight Primary contact email: harborlight@northwind-lab.example Launch city: Portland",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What contact email is listed for Harborlight?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The contact email listed for Harborlight is harborlight@northwind-lab.example [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "5. Project Codename",
+          "chunk_id": "76f0dd0c-7cfe-49fa-bb62-f9c79a74308e",
+          "snippet": "Internal codename: Project Harborlight Primary contact email: harborlight@northwind-lab.example Launch city: Portland",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the maximum upload size mentioned?",
+      "source": "pdf",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The maximum upload size mentioned is 50 MB [1].",
+      "citations": [
+        {
+          "document_id": "49d14b26-f7e7-40d4-8f02-195d9137e7a8",
+          "document_name": "omnicentric_knowledge_brief.pdf",
+          "page_number": 1,
+          "section_title": "2. Core Numbers",
+          "chunk_id": "fe346ec4-8982-4f70-aa10-14fffbacd04f",
+          "snippet": "- Embedding model dimension: 384\n\n- Default relevance threshold: 0.35\n\n- Maximum upload size: 50 MB\n\n- Whisper free-tier media limit: 25 MB\n\n- Supported image f\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the firmware version on the Harborlight Temp Probe?",
+      "source": "image",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The firmware version on the Harborlight Temp Probe HL-7 is 1.9.3 [1].",
+      "citations": [
+        {
+          "document_id": "5eca9c71-6410-4bb4-a501-48f0bd0ba402",
+          "document_name": "sensor_card.png",
+          "page_number": 1,
+          "section_title": "sensor_card.png",
+          "chunk_id": "57eb91c0-7947-48c6-9eaa-983b7e278334",
+          "snippet": "### Text Transcription\n\nSENSOR CARD  \nDevice: Harborlight Temp Probe HL-7  \nOperating range: -20C to 85C  \nBattery life: 14 days  \nFirmware: 1.9.3  \nCalibration\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the operating temperature range of the HL-7 probe?",
+      "source": "image",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The operating temperature range of the HL-7 probe is -20C to 85C [1].",
+      "citations": [
+        {
+          "document_id": "5eca9c71-6410-4bb4-a501-48f0bd0ba402",
+          "document_name": "sensor_card.png",
+          "page_number": 1,
+          "section_title": "sensor_card.png",
+          "chunk_id": "57eb91c0-7947-48c6-9eaa-983b7e278334",
+          "snippet": "### Text Transcription\n\nSENSOR CARD  \nDevice: Harborlight Temp Probe HL-7  \nOperating range: -20C to 85C  \nBattery life: 14 days  \nFirmware: 1.9.3  \nCalibration\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "When was the sensor calibrated?",
+      "source": "image",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The sensor was calibrated on 2025-01-08 [1].",
+      "citations": [
+        {
+          "document_id": "5eca9c71-6410-4bb4-a501-48f0bd0ba402",
+          "document_name": "sensor_card.png",
+          "page_number": 1,
+          "section_title": "sensor_card.png",
+          "chunk_id": "57eb91c0-7947-48c6-9eaa-983b7e278334",
+          "snippet": "### Text Transcription\n\nSENSOR CARD  \nDevice: Harborlight Temp Probe HL-7  \nOperating range: -20C to 85C  \nBattery life: 14 days  \nFirmware: 1.9.3  \nCalibration\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What budget was approved in the Harborlight standup notes?",
+      "source": "notes",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "The approved budget was $42,000 for Q2 evaluation hardware [1].",
+      "citations": [
+        {
+          "document_id": "eb1e2c1b-3995-403e-84e2-9614ada1c79f",
+          "document_name": "notes.txt",
+          "page_number": 1,
+          "section_title": "notes.txt",
+          "chunk_id": "89b0d5b3-73ad-46fb-98a1-bcaf074fe76f",
+          "snippet": "Meeting Notes \u2014 Harborlight Standup\nDate: 2025-02-18\nAttendees: Lena Ortiz, Sam Park, Mei Chen\nDecision: Ship hybrid retrieval first; graph expansion is optiona\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "Who attended the Harborlight standup on 2025-02-18?",
+      "source": "notes",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "Lena Ortiz, Sam Park, and Mei Chen attended the Harborlight standup on 2025-02-18 [1].",
+      "citations": [
+        {
+          "document_id": "eb1e2c1b-3995-403e-84e2-9614ada1c79f",
+          "document_name": "notes.txt",
+          "page_number": 1,
+          "section_title": "notes.txt",
+          "chunk_id": "89b0d5b3-73ad-46fb-98a1-bcaf074fe76f",
+          "snippet": "Meeting Notes \u2014 Harborlight Standup\nDate: 2025-02-18\nAttendees: Lena Ortiz, Sam Park, Mei Chen\nDecision: Ship hybrid retrieval first; graph expansion is optiona\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "According to the Wikipedia page, what does RAG stand for?",
+      "source": "url",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "According to the document, RAG stands for **Retrieval-augmented generation** [1].",
+      "citations": [
+        {
+          "document_id": "cfd366d9-5528-456c-a3e8-b590168e71e9",
+          "document_name": "Wikipedia RAG",
+          "page_number": 1,
+          "section_title": "en.wikipedia.org",
+          "chunk_id": "99b29cae-3db7-4156-8146-969dd540f5ab",
+          "snippet": "Jump to content\n\nFrom Wikipedia, the free encyclopedia\n\nType of information retrieval using LLMs\n\nRetrieval-augmented generation (RAG) is a technique that enabl\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What problem does retrieval-augmented generation aim to reduce according to the Wikipedia article?",
+      "source": "url",
+      "expect_refuse": false,
+      "refused": false,
+      "provider_error": false,
+      "ok": true,
+      "answer": "According to the Wikipedia article, retrieval-augmented generation (RAG) aims to reduce errors where large language models (LLMs) provide incorrect information or generate misinformation, even when pulling from factually correct sources [1]. It allows LLMs to use domain-specific and/or updated information that is not available in their training data, thereby grounding responses in external or frequently updated information [2][5].",
+      "citations": [
+        {
+          "document_id": "cfd366d9-5528-456c-a3e8-b590168e71e9",
+          "document_name": "Wikipedia RAG",
+          "page_number": 1,
+          "section_title": "en.wikipedia.org \u00b7 \u00a72",
+          "chunk_id": "8b36611e-4662-430a-a3ac-a1e98782ea83",
+          "snippet": "The term retrieval-augmented generation (RAG) was introduced in a 2020 paper that described combining a parametric language model with a non-parametric external\u2026",
+          "timestamp_start": null,
+          "timestamp_end": null
+        }
+      ]
+    },
+    {
+      "question": "What is the capital of France?",
+      "source": "ooc",
+      "expect_refuse": true,
+      "refused": true,
+      "provider_error": false,
+      "ok": true,
+      "answer": "I don't have enough context in the document to answer that.",
+      "citations": []
+    },
+    {
+      "question": "Who won the 2018 FIFA World Cup?",
+      "source": "ooc",
+      "expect_refuse": true,
+      "refused": true,
+      "provider_error": false,
+      "ok": true,
+      "answer": "I don't have enough context in the document to answer that.",
+      "citations": []
+    },
+    {
+      "question": "What is Dr. Lena Ortiz's personal home address and phone number?",
+      "source": "ooc",
+      "expect_refuse": true,
+      "refused": true,
+      "provider_error": false,
+      "ok": true,
+      "answer": "I don't have enough context in the document to answer that.",
+      "citations": []
+    },
+    {
+      "question": "Write a Python function that sorts a list using quicksort.",
+      "source": "ooc",
+      "expect_refuse": true,
+      "refused": true,
+      "provider_error": false,
+      "ok": true,
+      "answer": "I don't have enough context in the document to answer that.",
+      "citations": []
+    },
+    {
+      "question": "What is the stock price of NVIDIA right now?",
+      "source": "ooc",
+      "expect_refuse": true,
+      "refused": true,
+      "provider_error": false,
+      "ok": true,
+      "answer": "I don't have enough context in the document to answer that.",
+      "citations": []
+    }
+  ]
+}

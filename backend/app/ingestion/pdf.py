@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import base64
 import logging
 import re
+import tempfile
 from pathlib import Path
 
 from app.config import get_settings
@@ -13,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 _TABLE_SEP_RE = re.compile(r"^\|[\s\-:|]+\|$")
+_ZW_RE = re.compile(r"[\u200b\u200c\u200d\ufeff]")
+
+# Pages with little extractable text but embedded images need vision OCR.
+_SPARSE_TEXT_CHARS = 220
 
 def _parse_markdown_blocks(
     md: str,
@@ -67,7 +73,7 @@ def _parse_markdown_blocks(
 
         if line.strip() in ("---", "***") and not in_table:
             continue
-        m_page = re.match(r"^<!--\s*page\s*[=:]\s*(\d+)\s*-->$", line.strip(), re.I)
+        m_page = re.match(r"^<!--\s*page\s*[=:]\s*(\d+)\s*-->$", line.strip(), re.IGNORECASE)
         if m_page:
             flush_text()
             if in_table:
@@ -134,6 +140,149 @@ def _load_docling(file_path: str, source_id: str) -> list[RawElement]:
 
     return _parse_markdown_blocks(md, source_id=source_id, page_hint=1)
 
+def _clean_pdf_text(text: str) -> str:
+    return _ZW_RE.sub("", text or "").strip()
+
+
+def _vision_ocr_png_bytes(png_bytes: bytes, *, page_number: int) -> str:
+    """OCR / describe a rendered PDF page via Gemini (preferred) or Groq vision."""
+    settings = get_settings()
+    mime = "image/png"
+    b64 = base64.b64encode(png_bytes).decode("ascii")
+    prompt = (
+        "This is a scanned or screenshot page from a PDF. "
+        "Transcribe ALL visible text exactly (OCR). Then briefly describe any "
+        "diagrams, charts, UI screenshots, or figures that are not pure text. "
+        "Be factual; do not invent content that is not visible."
+    )
+
+    if settings.gemini_api_key:
+        model = (settings.llm_fallback_model or "gemini-3.6-flash").strip()
+        if not model.startswith("gemini"):
+            model = "gemini-3.6-flash"
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{model}:generateContent"
+        )
+        body = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {"inline_data": {"mime_type": mime, "data": b64}},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0.1},
+        }
+        import httpx
+
+        with httpx.Client(timeout=120.0) as client:
+            resp = client.post(url, params={"key": settings.gemini_api_key}, json=body)
+            if resp.status_code >= 400:
+                raise RuntimeError(f"Gemini OCR {resp.status_code}: {resp.text[:300]}")
+            parts = resp.json()["candidates"][0]["content"]["parts"]
+            text = "".join(p.get("text", "") for p in parts).strip()
+            if text:
+                return text
+
+    if settings.groq_api_key:
+        from app.ingestion.image import _caption_groq_sync
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(png_bytes)
+            tmp_path = Path(tmp.name)
+        try:
+            return _caption_groq_sync(tmp_path, mime, settings.groq_api_key)
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+    raise RuntimeError("No vision API key available for PDF page OCR")
+
+
+def _enrich_sparse_pages_with_ocr(
+    file_path: str,
+    source_id: str,
+    elements: list[RawElement],
+) -> list[RawElement]:
+    """Render image-heavy / sparse pages and append vision-OCR elements."""
+    settings = get_settings()
+    if not (settings.gemini_api_key or settings.groq_api_key):
+        logger.info("Skipping PDF page OCR — no Gemini/Groq vision key configured")
+        return elements
+
+    try:
+        import fitz
+    except ImportError:
+        return elements
+
+    by_page: dict[int, list[RawElement]] = {}
+    for el in elements:
+        if el.page_number is not None:
+            by_page.setdefault(el.page_number, []).append(el)
+
+    try:
+        doc = fitz.open(file_path)
+    except Exception as exc:
+        logger.warning("Could not open PDF for OCR enrichment: %s", exc)
+        return elements
+
+    extras: list[RawElement] = []
+    try:
+        for page_idx in range(len(doc)):
+            page_no = page_idx + 1
+            page = doc[page_idx]
+            native = _clean_pdf_text(page.get_text("text"))
+            existing = "\n".join(
+                _clean_pdf_text(e.content) for e in by_page.get(page_no, []) if e.content
+            )
+            text_len = max(len(native), len(existing))
+            image_count = len(page.get_images(full=True) or [])
+            needs_ocr = text_len < _SPARSE_TEXT_CHARS or (
+                image_count > 0 and text_len < _SPARSE_TEXT_CHARS * 2
+            )
+            if not needs_ocr:
+                continue
+            try:
+                # ~144 DPI is enough for OCR while keeping payloads smaller
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                ocr_text = _vision_ocr_png_bytes(pix.tobytes("png"), page_number=page_no)
+                ocr_text = _clean_pdf_text(ocr_text)
+                if not ocr_text or len(ocr_text) < 20:
+                    continue
+                # Avoid near-duplicate of already-extracted text
+                if existing and ocr_text.lower() in existing.lower():
+                    continue
+                extras.append(
+                    RawElement(
+                        type=ElementType.IMAGE,
+                        content=ocr_text,
+                        page_number=page_no,
+                        source_id=source_id,
+                        section_title=f"Page {page_no} (OCR)",
+                        metadata={
+                            "source": "pdf_page_ocr",
+                            "native_text_chars": text_len,
+                            "image_count": image_count,
+                        },
+                    )
+                )
+                logger.info(
+                    "PDF page %d OCR added (%d chars, %d images)",
+                    page_no,
+                    len(ocr_text),
+                    image_count,
+                )
+            except Exception as exc:
+                logger.warning("PDF page %d OCR failed: %s", page_no, exc)
+    finally:
+        doc.close()
+
+    if not extras:
+        return elements
+    return list(elements) + extras
+
+
 def _load_pymupdf_plain(file_path: str, source_id: str) -> list[RawElement]:
     import fitz
 
@@ -142,7 +291,7 @@ def _load_pymupdf_plain(file_path: str, source_id: str) -> list[RawElement]:
     try:
         for page_idx in range(len(doc)):
             page = doc[page_idx]
-            text = page.get_text("text").strip()
+            text = _clean_pdf_text(page.get_text("text"))
             if not text:
                 elements.append(
                     RawElement(
@@ -233,7 +382,7 @@ def layout_looks_hard(file_path: str, *, sample_pages: int = 6) -> bool:
 
 def _docling_available() -> bool:
     try:
-        import docling  
+        import docling
 
         return True
     except ImportError:
@@ -254,12 +403,12 @@ class PDFLoader(DocumentLoader):
             prefer_docling = hard and _docling_available()
             if prefer_docling:
                 order = ["docling", "pymupdf4llm", "pymupdf"]
-                logger.info("PDF auto → Docling (hard layout)")
+                logger.info("PDF auto -> Docling (hard layout)")
             else:
                 order = ["pymupdf4llm", "docling", "pymupdf"]
                 if hard:
                     logger.info(
-                        "PDF auto → pymupdf4llm (hard layout but Docling not installed; "
+                        "PDF auto -> pymupdf4llm (hard layout but Docling not installed; "
                         "pip install -e '.[advanced]')"
                     )
         else:
@@ -284,10 +433,15 @@ class PDFLoader(DocumentLoader):
 
                 usable = [e for e in elements if e.content.strip()]
                 if usable:
+                    # Clean zero-width junk common in Word→PDF exports
+                    for el in usable:
+                        el.content = _clean_pdf_text(el.content)
+                    usable = [e for e in usable if e.content]
+                    usable = _enrich_sparse_pages_with_ocr(file_path, source_id, usable)
                     logger.info("PDF parsed with %s (%d elements)", name, len(usable))
                     return usable
                 last_err = RuntimeError(f"{name} returned no text")
-            except Exception as exc:  
+            except Exception as exc:
                 logger.warning("PDF parser %s failed: %s", name, exc)
                 last_err = exc
 

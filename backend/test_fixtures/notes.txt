@@ -1,0 +1,6 @@
+Meeting Notes — Harborlight Standup
+Date: 2025-02-18
+Attendees: Lena Ortiz, Sam Park, Mei Chen
+Decision: Ship hybrid retrieval first; graph expansion is optional.
+Budget approved: $42,000 for Q2 evaluation hardware.
+Next milestone: citation UX polish by April 5, 2025.

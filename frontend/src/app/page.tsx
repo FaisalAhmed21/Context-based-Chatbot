@@ -17,18 +17,14 @@ import {
   getAuthConfig,
   getAuthMe,
   getDocumentStatus,
-  getEvalSummary,
-  getStoredAccessToken,
   listDocuments,
   listSessions,
+  getStoredAccessToken,
   getSessionHistory,
   reingestDocument,
-  runEval,
   setStoredAccessToken,
   signInWithGoogle,
   streamMessage,
-  tuneEval,
-  type EvalSummary,
 } from "@/lib/api";
 
 export default function HomePage() {
@@ -44,9 +40,6 @@ export default function HomePage() {
   const [highlightKey, setHighlightKey] = useState(0);
   const [highlightText, setHighlightText] = useState<string | null>(null);
   const [bootError, setBootError] = useState<string | null>(null);
-  const [evalSummary, setEvalSummary] = useState<EvalSummary | null>(null);
-  const [evalBusy, setEvalBusy] = useState(false);
-  const [evalNote, setEvalNote] = useState<string | null>(null);
   const [authLabel, setAuthLabel] = useState<string | null>(null);
   const [authPicture, setAuthPicture] = useState<string | null>(null);
   const [authEnabled, setAuthEnabled] = useState(false);
@@ -116,8 +109,7 @@ export default function HomePage() {
         const firstReady = docs.find((d) => d.status === "ready") || docs[0];
         return firstReady?.id || null;
       });
-      const summary = await getEvalSummary().catch(() => null);
-      setEvalSummary(summary);
+      });
 
       const pastSessions = await listSessions().catch(() => []);
       setSessions(pastSessions);
@@ -276,8 +268,6 @@ export default function HomePage() {
         };
         return copy;
       });
-      const summary = await getEvalSummary().catch(() => null);
-      if (summary) setEvalSummary(summary);
     } catch (e) {
       setMessages((m) => {
         const copy = [...m];
@@ -308,44 +298,6 @@ export default function HomePage() {
     }
   };
 
-  const onRunEval = async () => {
-    if (!scopeReady.length) return;
-    setEvalBusy(true);
-    setEvalNote(null);
-    try {
-      const result = await runEval(scopeReady);
-      const faith = result.faithfulness;
-      const refuse = result.refusal_accuracy;
-      setEvalNote(
-        `Eval n=${result.n} · faithfulness ${faith} · refusal ${refuse}` +
-          (result.ragas && typeof result.ragas === "object"
-            ? " · RAGAS attempted"
-            : ""),
-      );
-      const summary = await getEvalSummary().catch(() => null);
-      if (summary) setEvalSummary(summary);
-    } catch (e) {
-      setEvalNote(e instanceof Error ? e.message : "Eval failed");
-    } finally {
-      setEvalBusy(false);
-    }
-  };
-
-  const onTune = async () => {
-    if (!scopeReady.length) return;
-    setEvalBusy(true);
-    setEvalNote(null);
-    try {
-      const result = await tuneEval(scopeReady);
-      setEvalNote(
-        `Recommended RELEVANCE_THRESHOLD=${result.recommended_threshold} ` +
-          `(current ${result.current_threshold}). Update backend .env and restart.`,
-      );
-    } catch (e) {
-      setEvalNote(e instanceof Error ? e.message : "Tune failed");
-    } finally {
-      setEvalBusy(false);
-    }
   };
 
   return (
@@ -497,7 +449,7 @@ export default function HomePage() {
             <div className="flex flex-col min-h-[600px] md:min-h-0 min-w-0 rounded-3xl border border-white/60 bg-white/70 p-4 lg:p-5 shadow-lg shadow-amber-900/5 backdrop-blur-xl overflow-y-auto custom-scrollbar">
               <div className="mb-4 flex items-center justify-between border-b border-stone-200/70 pb-3">
                 <h2 className="text-sm font-bold tracking-wide text-stone-800 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#F9F5F3]0 shadow-[0_0_8px_rgba(184,122,93,0.6)] animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#B87A5D] shadow-[0_0_8px_rgba(184,122,93,0.6)] animate-pulse"></span>
                   OmniCentric Chat
                 </h2>
 

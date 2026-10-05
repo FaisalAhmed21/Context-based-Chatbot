@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 _MULTI_HOP = re.compile(
     r"\b(compare|versus|vs\.?|difference|both|across|relationship|how does .+ relate|"
     r"as well as|in addition|and also)\b",
-    re.I,
+    re.IGNORECASE,
 )
 
 def looks_multihop(question: str) -> bool:

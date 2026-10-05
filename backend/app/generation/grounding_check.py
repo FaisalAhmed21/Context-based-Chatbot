@@ -6,15 +6,23 @@ import logging
 import re
 
 from app.config import get_settings
-from app.generation.prompt import REFUSAL_MESSAGE, format_context
+from app.generation.prompt import REFUSAL_MESSAGE, format_context, is_refusal_text
 from app.types import GenerationResult, RetrievedChunk
 
 logger = logging.getLogger(__name__)
 
-_GROUNDED_RE = re.compile(r"\bGROUNDED\b", re.I)
-_UNGROUNDED_RE = re.compile(r"\bUNGROUNDED\b", re.I)
+_GROUNDED_RE = re.compile(r"\bGROUNDED\b", re.IGNORECASE)
+_UNGROUNDED_RE = re.compile(r"\bUNGROUNDED\b", re.IGNORECASE)
 
-_CHECK_SYSTEM = """You are a strict grading evaluator. Check if the ANSWER is completely supported by the CONTEXT. If the answer contains any information not present in the context, output UNGROUNDED. Otherwise output GROUNDED. Only output one word: GROUNDED or UNGROUNDED."""
+_CHECK_SYSTEM = """You are a strict grading evaluator.
+Decide if ANSWER is supported by CONTEXT.
+- GROUNDED: every factual claim is present in CONTEXT (paraphrase OK).
+- UNGROUNDED: ANSWER adds facts, numbers, names, code, or trivia absent from CONTEXT.
+Output exactly one word: GROUNDED or UNGROUNDED."""
+
+# Cross-encoder logits below this are too weak to pass the gate alone
+# when RERANK_THRESHOLD is set very low (e.g. -5) for ranking only.
+_RERANK_ALONE_FLOOR = 0.0
 
 def relevance_gate(chunks: list[RetrievedChunk]) -> GenerationResult | None:
 
@@ -30,16 +38,27 @@ def relevance_gate(chunks: list[RetrievedChunk]) -> GenerationResult | None:
     top = chunks[0]
     dense_scores = [c.dense_score for c in chunks if c.dense_score is not None]
     best_dense = max(dense_scores) if dense_scores else None
+    rerank_scores = [c.rerank_score for c in chunks if c.rerank_score is not None]
+    best_rerank = max(rerank_scores) if rerank_scores else None
 
     dense_ok = best_dense is not None and best_dense >= settings.relevance_threshold
-    sparse_ok = (
-        top.sparse_rank is not None
-        and top.rerank_score is not None
-        and top.rerank_score >= settings.rerank_threshold
+    # After RRF + rerank the top hit may be dense-only; do not require sparse_rank on top.
+    # Bare rerank pass must clear a meaningful floor so a -5 threshold cannot open the gate.
+    rerank_ok = best_rerank is not None and best_rerank >= max(
+        settings.rerank_threshold, _RERANK_ALONE_FLOOR
+    )
+    sparse_ok = any(
+        c.sparse_rank is not None
+        and c.sparse_rank <= 3
+        and (
+            c.rerank_score is None
+            or c.rerank_score >= max(settings.rerank_threshold, -2.0)
+        )
+        for c in chunks
     )
 
-    confidence = best_dense if best_dense is not None else (top.rerank_score or top.score)
-    if not dense_ok and not sparse_ok:
+    confidence = best_dense if best_dense is not None else (best_rerank if best_rerank is not None else top.score)
+    if not dense_ok and not rerank_ok and not sparse_ok:
         return GenerationResult(
             answer=REFUSAL_MESSAGE,
             refused=True,
@@ -90,7 +109,7 @@ async def groundedness_check(
 
     settings = get_settings()
 
-    if answer.strip() == REFUSAL_MESSAGE:
+    if is_refusal_text(answer):
         return GenerationResult(
             answer=REFUSAL_MESSAGE,
             refused=True,

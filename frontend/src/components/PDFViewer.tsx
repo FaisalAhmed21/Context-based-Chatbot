@@ -44,9 +44,7 @@ function formatTs(s: number): string {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
 
-function norm(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, " ").trim();
-}
+
 
 type Rect = { top: number; left: number; width: number; height: number };
 
@@ -324,6 +322,7 @@ export function PDFViewer({
             }`}
           >
             {}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={fileUrl}
               alt={filename || "uploaded"}
