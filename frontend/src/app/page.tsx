@@ -109,7 +109,6 @@ export default function HomePage() {
         const firstReady = docs.find((d) => d.status === "ready") || docs[0];
         return firstReady?.id || null;
       });
-      });
 
       const pastSessions = await listSessions().catch(() => []);
       setSessions(pastSessions);
@@ -296,8 +295,6 @@ export default function HomePage() {
     } else {
       setHighlightKey((k) => k + 1);
     }
-  };
-
   };
 
   return (
