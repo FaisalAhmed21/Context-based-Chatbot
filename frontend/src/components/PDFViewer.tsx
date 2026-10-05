@@ -54,7 +54,7 @@ function getHighlightRects(root: HTMLElement, snippet: string | null | undefined
   if (!snippet) return [];
   const unsortedSpans = Array.from(
     root.querySelectorAll(".react-pdf__Page__textContent span")
-  ) as HTMLElement[];
+  ).filter((el) => el.children.length === 0) as HTMLElement[];
   if (!unsortedSpans.length) {
     console.log("[highlight] no spans found");
     return [];
@@ -109,8 +109,21 @@ function getHighlightRects(root: HTMLElement, snippet: string | null | undefined
   // Calculate relative to the pageWrapRef which is our positioning container
   const rootRect = root.getBoundingClientRect();
   
+  const spanLogs = [];
   for (const el of Array.from(toMark).slice(0, 35)) {
     const rect = el.getBoundingClientRect();
+    spanLogs.push({
+      text: el.textContent,
+      offsetTop: el.offsetTop,
+      offsetLeft: el.offsetLeft,
+      rectTop: rect.top,
+      rectLeft: rect.left,
+      rectWidth: rect.width,
+      rectHeight: rect.height,
+      rootTop: rootRect.top,
+      rootLeft: rootRect.left
+    });
+    
     // Even if width/height is 0 (due to react-pdf css tricks), we must render something
     rects.push({
       top: rect.top - rootRect.top + root.scrollTop,
@@ -120,6 +133,7 @@ function getHighlightRects(root: HTMLElement, snippet: string | null | undefined
     });
   }
   
+  console.log("[highlight] span rect details:", JSON.stringify(spanLogs, null, 2));
   console.log("[highlight] found", rects.length, "highlight rects");
   return rects;
 }
