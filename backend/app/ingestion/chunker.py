@@ -250,7 +250,7 @@ async def apply_contextual_prefix(
 
     logger.info("Generating LLM contextual retrieval prefixes for %d chunks in %s", len(chunks), doc)
 
-    batch_size = 5
+    batch_size = 10
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i : i + batch_size]
         prompt = f"You are a helpful assistant. We are preparing text chunks from a document named '{doc}' for search.\n"
