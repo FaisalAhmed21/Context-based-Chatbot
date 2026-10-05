@@ -57,7 +57,7 @@ def _caption_gemini_sync(
 
 def _caption_groq_sync(file_path: Path, mime: str, api_key: str) -> str:
     data = base64.b64encode(file_path.read_bytes()).decode("ascii")
-    model = "llama-3.2-90b-vision-preview"
+    model = "qwen/qwen3.8-27b"
     payload = {
         "model": model,
         "messages": [
