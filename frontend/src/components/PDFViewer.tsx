@@ -126,9 +126,15 @@ function highlightSnippetInLayer(root: HTMLElement, snippet: string | null | und
   let first: HTMLElement | null = null;
   for (const el of Array.from(toMark).slice(0, 35)) {
     el.classList.add("citation-hl");
-    el.style.background = "rgba(13, 148, 136, 0.25)";
+    // Force visibility and background aggressively
+    el.style.backgroundColor = "rgba(13, 148, 136, 0.25)";
+    el.style.opacity = "1";
+    el.style.visibility = "visible";
     el.style.borderRadius = "2px";
     el.style.boxShadow = "0 0 0 2px rgba(13, 148, 136, 0.15)";
+    
+    // Some browsers/pdf.js versions hide the text layer via pointer-events or z-index
+    el.style.zIndex = "10"; 
     if (!first) first = el;
   }
   console.log("[highlight] highlighted", toMark.size, "spans");
