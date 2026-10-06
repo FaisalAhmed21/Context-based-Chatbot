@@ -22,8 +22,6 @@ dependencies = [
   "PyJWT>=2.9.0",
   "pymupdf4llm>=0.0.17",
   "pymupdf>=1.25.0",
-  "pytesseract>=0.3.13",
-  "Pillow>=10.4.0",
 ]
 
 [project.optional-dependencies]
