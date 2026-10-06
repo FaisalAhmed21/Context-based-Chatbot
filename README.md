@@ -9,7 +9,7 @@ This project allows you to build a searchable, multimodal knowledge base by uplo
 1. **Context-Grounded Answers (Refuses Instead of Guessing)**
    Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating to keep answers tied directly to your documents. If the answer isn't in your documents, the bot explicitly refuses instead of guessing or hallucinating.
 2. **Lightning-Fast Instant Streaming**
-   By defaulting to a streamlined Dense + BM25 Hybrid Retrieval pipeline without heavy LLM loops, the chatbot begins streaming its answer to the screen in milliseconds, ensuring a snappy ChatGPT-like user experience.
+   By disabling the secondary groundedness auditor, the chatbot begins streaming its answer to the screen in milliseconds, ensuring a snappy ChatGPT-like user experience while relying on the primary prompt for accuracy.
 3. **Multimodal Capabilities**
    The platform goes beyond plain text: it parses complex PDF layouts, processes images via Vision LLMs, scrapes live web pages, and indexes them all seamlessly into a single queryable vector store.
 4. **Hybrid Retrieval Pipeline**
@@ -55,10 +55,8 @@ LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
 LLM_FALLBACK_MODEL=gemini-1.5-flash
 
-# Disable slow agentic/LLM loops to guarantee instant streaming & fast processing
+# Disable the slow groundedness auditor to guarantee instant streaming
 GROUNDEDNESS_ENABLED=false
-AGENTIC_ENABLED=false
-RERANK_ENABLED=false
 
 # Google Auth
 AUTH_ENABLED=true
