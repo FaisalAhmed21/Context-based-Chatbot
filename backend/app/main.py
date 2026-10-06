@@ -42,7 +42,7 @@ tags_metadata = [
     },
     {
         "name": "Documents",
-        "description": "Upload, parse, embed, and manage multimodal knowledge base documents (PDF, image, video, URL).",
+        "description": "Upload, parse, embed, and manage multimodal knowledge base documents (PDF, image, URL).",
     },
     {
         "name": "Chat",

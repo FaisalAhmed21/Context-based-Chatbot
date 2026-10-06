@@ -14,7 +14,6 @@ class ElementType(str, Enum):
     TEXT = "text"
     TABLE = "table"
     IMAGE = "image"
-    TRANSCRIPT_SEGMENT = "transcript_segment"
 
 class RawElement(BaseModel):
 

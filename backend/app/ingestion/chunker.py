@@ -136,10 +136,6 @@ def structure_aware_chunk(
             flush_group()
             groups.append([el])
             continue
-        if el.type == ElementType.TRANSCRIPT_SEGMENT:
-            flush_group()
-            groups.append([el])
-            continue
         if not el.content or not el.content.strip():
             continue
         if current and (
@@ -154,7 +150,6 @@ def structure_aware_chunk(
         if group[0].type in (
             ElementType.TABLE,
             ElementType.IMAGE,
-            ElementType.TRANSCRIPT_SEGMENT,
         ):
             el = group[0]
             meta = dict(el.metadata or {})
@@ -227,13 +222,6 @@ async def apply_contextual_prefix(
                 bits.append("(table)")
             if ch.chunk_type == ElementType.IMAGE:
                 bits.append("(image caption)")
-            if ch.chunk_type == ElementType.TRANSCRIPT_SEGMENT:
-                bits.append("(video transcript)")
-                ts = (ch.metadata or {}).get("timestamp_label") or (ch.metadata or {}).get(
-                    "timestamp_start"
-                )
-                if ts is not None:
-                    bits.append(f"at {ts}")
             prefix = ", ".join(bits) + ".\n\n"
             ch.contextualized_content = prefix + ch.content
 

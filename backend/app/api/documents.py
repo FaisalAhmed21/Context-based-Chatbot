@@ -29,7 +29,6 @@ from app.db.session import SessionLocal, get_db
 from app.ingestion.image import is_image_path
 from app.ingestion.pipeline import ensure_upload_dir, run_ingestion
 from app.ingestion.text import is_text_path
-from app.ingestion.video import is_video_path
 from app.ingestion.web import fetch_url_text
 from app.retrieval.vector_store import delete_by_document
 from app.types import DocumentOut, DocumentStatus
@@ -45,15 +44,6 @@ _ALLOWED = {
     ".webp",
     ".gif",
     ".bmp",
-    ".mp4",
-    ".webm",
-    ".mov",
-    ".mkv",
-    ".avi",
-    ".mpeg",
-    ".mp3",
-    ".wav",
-    ".m4a",
     ".txt",
     ".md",
     ".markdown",
@@ -86,10 +76,6 @@ def _content_type_for(filename: str, guessed: str | None) -> str:
         return guessed or "application/pdf"
     if is_image_path(filename):
         return guessed or "image/png"
-    if is_video_path(filename):
-        if Path(filename).suffix.lower() in {".mp3", ".wav", ".m4a"}:
-            return guessed or "audio/mpeg"
-        return guessed or "video/mp4"
     if is_text_path(filename) or suffix in {".html", ".htm"}:
         return guessed or "text/plain"
     return guessed or "application/octet-stream"
@@ -99,7 +85,7 @@ def _content_type_for(filename: str, guessed: str | None) -> str:
     response_model=DocumentOut,
     summary="Upload a knowledge-base file",
     description=(
-        "Accepts PDF, images, video/audio (Groq Whisper), and text/markdown. "
+        "Accepts PDF, images, and text/markdown. "
         "Kicks off async parse → chunk → embed → index. Replacing content: "
         "upload again or call POST /documents/{id}/reingest."
     ),
@@ -119,8 +105,7 @@ async def upload_document(
         raise HTTPException(
             status_code=400,
             detail=(
-                "Supported: PDF, images (PNG/JPG/WEBP/GIF), video/audio "
-                "(MP4/WEBM/MOV/MP3/WAV ≤25MB for Whisper), text (.txt/.md)."
+                "Supported: PDF, images (PNG/JPG/WEBP/GIF), text (.txt/.md)."
             ),
         )
 
@@ -128,11 +113,6 @@ async def upload_document(
     max_bytes = settings.max_upload_mb * 1024 * 1024
     if len(data) > max_bytes:
         raise HTTPException(status_code=400, detail=f"File exceeds {settings.max_upload_mb}MB limit.")
-    if is_video_path(file.filename) and len(data) > 25 * 1024 * 1024:
-        raise HTTPException(
-            status_code=400,
-            detail="Video/audio must be ≤25MB for Groq Whisper free tier. Compress or trim.",
-        )
 
     upload_root = ensure_upload_dir(settings.upload_dir)
     doc_id = uuid.uuid4()
@@ -248,7 +228,7 @@ async def document_file(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     authorization: str | None = Header(default=None),
-    token: str | None = Query(default=None, description="Bearer JWT for <img>/pdf.js/video"),
+    token: str | None = Query(default=None, description="Bearer JWT for <img>/pdf.js"),
 ) -> FileResponse:
 
     from app.api.auth import resolve_token_user

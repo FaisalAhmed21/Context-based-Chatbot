@@ -26,22 +26,10 @@ function isImageName(name: string | null, contentType?: string | null): boolean 
   return /\.(png|jpe?g|webp|gif|bmp)$/i.test(name);
 }
 
-function isVideoName(name: string | null, contentType?: string | null): boolean {
-  if (contentType?.startsWith("video/") || contentType?.startsWith("audio/")) return true;
-  if (!name) return false;
-  return /\.(mp4|webm|mov|mkv|avi|mpeg|mp3|wav|m4a)$/i.test(name);
-}
-
 function isTextish(name: string | null, contentType?: string | null): boolean {
   if (contentType === "text/uri-list" || contentType?.startsWith("text/")) return true;
   if (!name) return false;
   return /\.(txt|md|markdown|csv|json|log|html?|url)$/i.test(name);
-}
-
-function formatTs(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
 }
 
 
@@ -157,13 +145,9 @@ export function PDFViewer({
 
   const fileUrl = documentId ? documentFileUrl(documentId) : null;
   const imageMode = isImageName(filename, contentType);
-  const videoMode = isVideoName(filename, contentType);
-  const textMode = !imageMode && !videoMode && isTextish(filename, contentType);
-  const pdfMode = !!fileUrl && !imageMode && !videoMode && !textMode;
-  const total = imageMode || videoMode || textMode ? 1 : numPages ?? pageCountHint ?? null;
-  const audioOnly =
-    contentType?.startsWith("audio/") ||
-    (!!filename && /\.(mp3|wav|m4a)$/i.test(filename));
+  const textMode = !imageMode && isTextish(filename, contentType);
+  const pdfMode = !!fileUrl && !imageMode && !textMode;
+  const total = imageMode || textMode ? 1 : numPages ?? pageCountHint ?? null;
 
   useEffect(() => {
     if (!highlightKey) return;
@@ -172,15 +156,7 @@ export function PDFViewer({
     return () => clearTimeout(t);
   }, [highlightKey, page, seekSeconds]);
 
-  useEffect(() => {
-    if (seekSeconds == null || !videoRef.current) return;
-    try {
-      videoRef.current.currentTime = Math.max(0, seekSeconds);
-      void videoRef.current.play().catch(() => undefined);
-    } catch {
 
-    }
-  }, [seekSeconds, highlightKey, documentId]);
 
   const highlightTextRef = useRef(highlightText);
   highlightTextRef.current = highlightText;
@@ -288,12 +264,7 @@ export function PDFViewer({
         {imageMode && (
           <span className="text-[11px] uppercase tracking-wide text-stone-500">Image</span>
         )}
-        {videoMode && (
-          <span className="text-[11px] uppercase tracking-wide text-stone-500">
-            {audioOnly ? "Audio" : "Video"}
-            {seekSeconds != null ? ` · ${formatTs(seekSeconds)}` : ""}
-          </span>
-        )}
+
         {textMode && (
           <span className="text-[11px] uppercase tracking-wide text-stone-500">Text / web</span>
         )}
@@ -309,8 +280,7 @@ export function PDFViewer({
           <div className="relative z-[1] mx-auto mt-16 max-w-sm rounded bg-white/90 p-6 text-center shadow-sm">
             <p className="font-display text-lg text-white">Preview</p>
             <p className="mt-2 text-sm text-stone-600">
-              Upload a PDF, image, video, or text. Citation chips jump to the page or
-              timestamp and highlight the source snippet.
+              Upload a PDF, image, or text. Citation chips jump to the page and highlight the source snippet.
             </p>
           </div>
         )}
@@ -331,36 +301,7 @@ export function PDFViewer({
           </div>
         )}
 
-        {fileUrl && videoMode && (
-          <div
-            className={`relative z-[1] w-full max-w-xl transition ${
-              flash ? "ring-2 ring-[#B87A5D] ring-offset-4" : ""
-            }`}
-          >
-            {audioOnly ? (
-              <audio
-                ref={(el) => {
-                  videoRef.current = el;
-                }}
-                src={fileUrl}
-                controls
-                className="w-full"
-              />
-            ) : (
-              <video
-                ref={(el) => {
-                  videoRef.current = el;
-                }}
-                src={fileUrl}
-                controls
-                className="max-h-[70vh] w-full rounded shadow-md"
-              />
-            )}
-            <p className="mt-2 text-center text-[11px] text-stone-500">
-              Whisper transcript is indexed; click a citation to seek.
-            </p>
-          </div>
-        )}
+
 
         {fileUrl && textMode && (
           <iframe
