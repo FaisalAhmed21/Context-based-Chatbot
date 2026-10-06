@@ -4,40 +4,49 @@ Welcome to **OmniCentricBot**, a high-performance, Context-Grounded Multimodal R
 
 This project allows you to build a searchable knowledge base by uploading PDFs, images, text files, and web page URLs. The bot answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than guess when the context is insufficient.
 
-## Key Features
+---
 
-1. **Context-Grounded Answers (Refuses Instead of Guessing)**
-   Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating to keep answers tied directly to your documents. If the answer isn't in your documents, the bot explicitly refuses instead of guessing or hallucinating.
-2. **Lightning-Fast Instant Streaming**
-   By disabling the secondary groundedness auditor, the chatbot begins streaming its answer to the screen in milliseconds, ensuring a snappy ChatGPT-like user experience while relying on the primary prompt for accuracy.
-3. **Advanced Document & Image Parsing**
-   The platform processes files specifically based on their type:
-   - **PDFs:** Parsed into structured Markdown using **PyMuPDF4LLM**.
-   - **Images:** Sent to the free **OCR.space Tesseract API** to extract text, bypassing cloud OS C++ restrictions and requiring absolutely no paid LLM vision tokens.
-4. **Unified Ingestion Flow**
-   Whether the raw text comes from a PDF, an image, or a text file, it all passes through the exact same downstream flow: 
-   - Chunked into logical segments.
-   - Embedded using local **FastEmbed** (`BAAI/bge-small-en-v1.5`).
-   - Indexed instantly into a **Qdrant** Vector Database.
-5. **Interactive Citation UX**
-   The frontend doesn't just give you an answer; it shows its sources. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
+## Architecture & Data Lifecycle (How It Works)
+
+OmniCentricBot is designed around a modern, extremely fast, and cost-efficient pipeline. Here is exactly what happens from the moment you upload a file to the moment the chatbot answers a question.
+
+### 1. Document Ingestion & Parsing
+When a file is uploaded, it is routed to a specialized parser based on its MIME type:
+* **PDFs (`PyMuPDF4LLM`)**: Traditional PDF parsers destroy formatting, which confuses LLMs. We use `PyMuPDF4LLM` because it preserves tables, headers, and reading order, outputting perfectly structured Markdown.
+* **Images (`OCR.space API`)**: Because many cloud providers (like FastAPI Cloud, Render, or Vercel) restrict installing C++ applications like Tesseract directly onto their servers, we securely send images to the **OCR.space API**. This outsources the heavy C++ OCR extraction to their servers for free, instantly returning the extracted text.
+* **Web Pages (`BeautifulSoup`)**: Scrapes the raw HTML and cleans it into readable text.
+
+### 2. Chunking & Local Embedding
+Once the document is converted into raw text, it enters the **Unified Ingestion Flow**:
+* **Chunking**: The text is split into logical segments (approx. 500-1000 tokens) so the search engine can find precise paragraphs rather than entire books.
+* **Local Embedding (`FastEmbed`)**: Instead of paying for OpenAI or Cohere embeddings, the backend uses `FastEmbed` to locally run the `BAAI/bge-small-en-v1.5` model. This converts the text chunks into mathematical vectors entirely on your server's CPU, keeping data private and free.
+
+### 3. Vector Storage & Hybrid Search
+* **Qdrant Vector DB**: The vectors are saved into Qdrant. Qdrant was chosen because it supports **Hybrid Search**. When you ask a question, Qdrant searches using *Dense Vectors* (understanding the semantic meaning of your question) AND *Sparse BM25* (finding exact keyword matches). 
+* **Reciprocal Rank Fusion (RRF)**: The results from the semantic search and the keyword search are mathematically merged to find the absolute best chunks.
+* **Cross-Encoder Reranking**: The top results are passed through a local Cross-Encoder model that acts as a final judge, re-scoring them to guarantee the most relevant context is sent to the LLM.
+
+### 4. Generation & Streaming
+* **The LLM Engine (`Groq` + `Qwen`)**: The retrieved text is injected into a prompt and sent to Groq. Groq was chosen because its LPU (Language Processing Unit) architecture streams answers back at hundreds of tokens per second—making the chatbot feel instant. We use the `qwen/qwen3.8-27b` model for its high reasoning capabilities.
+* **The Fallback (`Google Gemini`)**: If Groq hits a free-tier rate limit, the backend automatically intercepts the error and seamlessly falls back to `gemini-3.8-flash`. This ensures your chatbot never crashes due to traffic.
+* **Groundedness / Anti-Hallucination**: The prompt explicitly forbids the LLM from using outside knowledge. If the answer isn't in the provided chunks, the LLM will output a strict refusal.
 
 ---
 
-## Tech Stack
+## Tech Stack (What Is Used & Why)
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | Next.js 16 (React 19), TailwindCSS, React-PDF |
-| **Backend** | FastAPI (Python 3.10+), Uvicorn, SQLAlchemy |
-| **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
-| **Vector DB** | Qdrant (Cloud in Prod, Local on-disk in Dev) |
-| **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
-| **Embeddings** | `BAAI/bge-small-en-v1.5` (via Local FastEmbed) |
-| **LLM Engine** | Groq (`qwen/qwen3.8-27b`) |
-| **Fallback LLM** | Google Gemini (`gemini-3.8-flash`) |
-| **Image OCR** | OCR.space API (Tesseract Engine 2) |
-| **Document Parsing**| PyMuPDF4LLM |
+| Layer | Technology | Why We Chose It |
+|---|---|---|
+| **Frontend** | Next.js 16 (React), TailwindCSS, React-PDF | Server-Side Rendering (SSR) for speed, beautiful modern UI, and integrated PDF viewing for citations. |
+| **Backend** | FastAPI (Python 3.10+), Uvicorn | Asynchronous, extremely fast, and Python-native (perfect for AI integrations). |
+| **Authentication**| Google Identity Services (OAuth2) | Stateless JWTs mean no managing passwords or user tables. |
+| **Vector DB** | Qdrant (Cloud in Prod, Local in Dev) | State-of-the-art hybrid search (Dense + BM25) with a very generous free cloud tier. |
+| **Relational DB** | SQLite (Dev) / PostgreSQL (Prod) | Stores chat history, document metadata, and user sessions. |
+| **Embeddings** | `FastEmbed` (`bge-small-en-v1.5`) | Runs locally on CPU without needing a GPU. Extremely fast and cost-free. |
+| **LLM Engine** | Groq (`qwen/qwen3.8-27b`) | Unbeatable inference speed for instant response streaming. |
+| **Fallback LLM** | Google Gemini (`gemini-3.8-flash`) | Acts as a reliable safety net if Groq gets rate-limited. |
+| **Image OCR** | OCR.space API | Bypasses restrictive cloud environments that block C++ OS installations. |
+| **Document Parsing**| PyMuPDF4LLM | Preserves Markdown structure and tables better than traditional PDF extractors. |
 
 ---
 
