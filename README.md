@@ -31,7 +31,7 @@ This project allows you to build a searchable knowledge base by uploading PDFs, 
 | **Frontend** | Next.js 16 (React 19), TailwindCSS, React-PDF |
 | **Backend** | FastAPI (Python 3.10+), Uvicorn, SQLAlchemy |
 | **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
-| **Vector DB** | Qdrant (Local on-disk) |
+| **Vector DB** | Qdrant (Cloud in Prod, Local on-disk in Dev) |
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via Local FastEmbed) |
 | **LLM Engine** | Groq (`qwen/qwen3.8-27b`) |
@@ -60,6 +60,10 @@ GEMINI_API_KEY=your_gemini_key
 LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
 LLM_FALLBACK_MODEL=gemini-3.8-flash
+
+# Qdrant Cloud
+QDRANT_URL=your_qdrant_url
+QDRANT_API_KEY=your_qdrant_api_key
 
 # Disable the slow groundedness auditor to guarantee instant streaming
 GROUNDEDNESS_ENABLED=false
