@@ -35,6 +35,7 @@ This project allows you to build a searchable knowledge base by uploading PDFs, 
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via Local FastEmbed) |
 | **LLM Engine** | Groq (`qwen/qwen3.8-27b`) |
+| **Fallback LLM** | Google Gemini (`gemini-3.8-flash`) |
 | **Image OCR** | OCR.space API (Tesseract Engine 2) |
 | **Document Parsing**| PyMuPDF4LLM |
 
@@ -53,10 +54,12 @@ Ensure the following critical backend environment variables are set in your Fast
 ```env
 # API Keys
 GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
 
 # Models
 LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
+LLM_FALLBACK_MODEL=gemini-3.8-flash
 
 # Disable the slow groundedness auditor to guarantee instant streaming
 GROUNDEDNESS_ENABLED=false
