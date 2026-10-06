@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     curl \
-    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 # Install deps first for better layer caching
