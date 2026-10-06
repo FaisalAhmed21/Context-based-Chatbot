@@ -1,21 +1,21 @@
-# OmniCentricBot: Grounded RAG Platform
+# OmniCentricBot: Ultra-Fast Grounded RAG Platform
 
-Welcome to **OmniCentricBot**, a Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
+Welcome to **OmniCentricBot**, a high-performance, Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
 
 This project allows you to build a searchable, multimodal knowledge base by uploading PDFs, images, text files, and web page URLs. The bot answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than guess when the context is insufficient.
 
 ## Key Features
 
 1. **Context-Grounded Answers (Refuses Instead of Guessing)**
-   Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating and Self-RAG-style groundedness checks to keep answers tied to your documents. If the answer isn't in your documents, the bot refuses instead of guessing.
-2. **Multimodal Capabilities**
-   The platform goes beyond plain text: it parses PDF layouts, processes images, and scrapes web pages, and indexes them together in a single queryable vector store.
-3. **Hybrid Retrieval Pipeline**
-   We combine Dense Vector Search (using `fastembed` Qdrant) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a Cross-Encoder Reranker to improve the precision of the retrieved context.
-4. **Interactive Citation UX**
+   Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating to keep answers tied directly to your documents. If the answer isn't in your documents, the bot explicitly refuses instead of guessing or hallucinating.
+2. **Lightning-Fast Instant Streaming**
+   By defaulting to a streamlined Dense + BM25 Hybrid Retrieval pipeline without heavy LLM loops, the chatbot begins streaming its answer to the screen in milliseconds, ensuring a snappy ChatGPT-like user experience.
+3. **Multimodal Capabilities**
+   The platform goes beyond plain text: it parses complex PDF layouts, processes images via Vision LLMs, scrapes live web pages, and indexes them all seamlessly into a single queryable vector store.
+4. **Hybrid Retrieval Pipeline**
+   We combine Dense Vector Search (using local `fastembed` embeddings) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a local Cross-Encoder Reranker to maximize the precision of the retrieved context.
+5. **Interactive Citation UX**
    The frontend doesn't just give you an answer; it shows its sources. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
-5. **Built-in Evaluations & Threshold Tuning**
-   Built-in evaluation endpoints allow you to run automated RAGAS-style metrics on held-out QA sets, and sweep relevance thresholds to recommend a suitable value for your specific dataset.
 
 ---
 
@@ -26,10 +26,11 @@ This project allows you to build a searchable, multimodal knowledge base by uplo
 | **Frontend** | Next.js 16 (React 19), TailwindCSS, React-PDF |
 | **Backend** | FastAPI (Python 3.10+), Uvicorn, SQLAlchemy |
 | **Authentication**| Google Identity Services (OAuth2) with stateless JWTs |
-| **Vector DB** | Qdrant (Local on-disk or Cloud) |
+| **Vector DB** | Qdrant (Local on-disk) |
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
-| **Embeddings** | `BAAI/bge-small-en-v1.5` (via FastEmbed) |
-| **LLM Engine** | Groq (GPT-OSS-20B) / Gemini fallback |
+| **Embeddings** | `BAAI/bge-small-en-v1.5` (via Local FastEmbed) |
+| **LLM Engine** | Groq (`qwen/qwen3.8-27b`) |
+| **Fallback LLM/Vision** | Google Gemini (`gemini-1.5-flash`) |
 | **Document Parsing**| PyMuPDF4LLM |
 
 ---
@@ -43,10 +44,27 @@ The backend runs on FastAPI Cloud.
 - API Base URL: `https://context-based-chatbot.fastapicloud.dev`
 - API Documentation: `https://context-based-chatbot.fastapicloud.dev/docs`
 
-Ensure the backend environment variables are set in your FastAPI Cloud dashboard:
-* `GROQ_API_KEY`: Your Groq API key for the LLM.
-* `AUTH_ENABLED`: `true`
-* `GOOGLE_CLIENT_ID`: Your Google OAuth client ID.
+Ensure the following critical backend environment variables are set in your FastAPI Cloud dashboard to ensure instant processing and avoid free-tier rate limits:
+```env
+# API Keys
+GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
+
+# Models
+LLM_PROVIDER=groq
+LLM_MODEL=qwen/qwen3.8-27b
+LLM_FALLBACK_MODEL=gemini-1.5-flash
+
+# Disable slow agentic/LLM loops to guarantee instant streaming & fast upload chunking
+CONTEXTUAL_RETRIEVAL_LLM=false
+GRAPHRAG_ENABLED=false
+GROUNDEDNESS_ENABLED=false
+AGENTIC_ENABLED=false
+
+# Google Auth
+AUTH_ENABLED=true
+GOOGLE_CLIENT_ID=your_client_id
+```
 
 ### 2. Frontend (Vercel)
 The frontend is deployed on Vercel. 
