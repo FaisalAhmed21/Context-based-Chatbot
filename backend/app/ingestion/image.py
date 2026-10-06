@@ -7,7 +7,8 @@ import logging
 import mimetypes
 from pathlib import Path
 
-import httpx
+import pytesseract
+from PIL import Image
 
 from app.config import get_settings
 from app.types import DocumentLoader, ElementType, RawElement
@@ -19,82 +20,15 @@ _IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
 def is_image_path(path: str | Path) -> bool:
     return Path(path).suffix.lower() in _IMAGE_EXT
 
-def _caption_gemini_sync(
-    file_path: Path,
-    mime: str,
-    api_key: str,
-    *,
-    model: str = "gemini-3.8-flash",
-) -> str:
-    data = base64.b64encode(file_path.read_bytes()).decode("ascii")
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{model}:generateContent"
-    )
-    body = {
-        "contents": [
-            {
-                "parts": [
-                    {
-                        "text": (
-                            "Transcribe ALL visible text exactly (OCR first). "
-                            "Preserve labels, numbers, units, dates, and product names. "
-                            "Then briefly note non-text visuals. Be factual; do not invent."
-                        )
-                    },
-                    {"inline_data": {"mime_type": mime, "data": data}},
-                ]
-            }
-        ],
-        "generationConfig": {"temperature": 0.1},
-    }
-    with httpx.Client(timeout=120.0) as client:
-        resp = client.post(url, params={"key": api_key}, json=body)
-        if resp.status_code >= 400:
-            raise RuntimeError(f"Gemini vision error {resp.status_code}: {resp.text[:300]}")
-        parts = resp.json()["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts).strip()
-
-def _caption_groq_sync(file_path: Path, mime: str, api_key: str) -> str:
-    data = base64.b64encode(file_path.read_bytes()).decode("ascii")
-    model = "qwen/qwen3.8-27b"
-    payload = {
-        "model": model,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            "Transcribe ALL visible text exactly (OCR first). "
-                            "Preserve labels, numbers, units, dates, and names. "
-                            "Then briefly note non-text visuals. Be factual; do not invent."
-                        ),
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:{mime};base64,{data}"},
-                    },
-                ],
-            }
-        ],
-        "temperature": 0.1,
-    }
-    with httpx.Client(timeout=120.0) as client:
-        resp = client.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json=payload,
-        )
-        if resp.status_code >= 400:
-            raise RuntimeError(f"Groq vision error {resp.status_code}: {resp.text[:300]}")
-        return resp.json()["choices"][0]["message"]["content"].strip()
+def _ocr_tesseract_sync(file_path: Path) -> str:
+    img = Image.open(file_path)
+    text = pytesseract.image_to_string(img)
+    return text.strip()
 
 def _fallback_caption(file_path: Path) -> str:
     return (
         f"Image file named '{file_path.name}'. "
-        "No vision API caption available — set GEMINI_API_KEY (recommended) to index visual content."
+        "No local OCR text available — ensure Tesseract OCR is installed on the system."
     )
 
 class ImageLoader(DocumentLoader):
@@ -107,31 +41,16 @@ class ImageLoader(DocumentLoader):
             raise ValueError(f"Not an image: {path.suffix}")
 
         mime = mimetypes.guess_type(str(path))[0] or "image/jpeg"
-        settings = get_settings()
-        caption = _fallback_caption(path)
-        gemini_model = (settings.llm_fallback_model or "gemini-3.8-flash").strip()
-        if not gemini_model.startswith("gemini"):
-            gemini_model = "gemini-3.8-flash"
+        
+        try:
+            caption = _ocr_tesseract_sync(path)
+            if not caption:
+                caption = f"Image file named '{path.name}'. No text detected by Tesseract OCR."
+        except Exception as exc:
+            logger.warning("Tesseract OCR failed: %s", exc)
+            caption = _fallback_caption(path)
 
-        if settings.gemini_api_key:
-            try:
-                caption = _caption_gemini_sync(
-                    path, mime, settings.gemini_api_key, model=gemini_model
-                )
-            except Exception as exc:
-                logger.warning("Gemini image caption failed: %s", exc)
-                if settings.groq_api_key:
-                    try:
-                        caption = _caption_groq_sync(path, mime, settings.groq_api_key)
-                    except Exception as exc2:
-                        logger.warning("Groq image caption failed: %s", exc2)
-        elif settings.groq_api_key:
-            try:
-                caption = _caption_groq_sync(path, mime, settings.groq_api_key)
-            except Exception as exc:
-                logger.warning("Groq image caption failed: %s", exc)
-
-        logger.info("Image captioned (%d chars) for %s", len(caption), path.name)
+        logger.info("Image OCR'd (%d chars) for %s", len(caption), path.name)
         return [
             RawElement(
                 type=ElementType.IMAGE,

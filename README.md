@@ -111,20 +111,31 @@ The backend exposes a clean, documented REST API. For full schema details, visit
 ### Core Endpoints
 
 * **Documents**
-  * `POST /documents/upload` - Upload and asynchronously ingest a media file (PDF, Image, Text).
+  * `POST /documents/upload` - Upload and asynchronously ingest a media file (PDF, Image, Video, Audio, Text).
   * `POST /documents/from-url` - Scrape and ingest a public webpage.
+  * `POST /documents/{id}/reingest` - Re-index a document without full retraining.
   * `GET /documents` - List all documents in the user's knowledge base.
+  * `GET /documents/{id}/status` - Check the processing status of a document.
   * `GET /documents/{id}/file` - Retrieve the original media file.
   * `DELETE /documents/{id}` - Delete a document and its vectors (cascade).
 
 * **Chat Sessions**
   * `POST /chat/sessions` - Create a new conversation memory scoped to specific documents.
+  * `GET /chat/sessions` - List all active chat sessions for the current user.
   * `POST /chat/{id}/message` - Send a prompt and receive a streamed (SSE) or JSON response.
   * `GET /chat/{id}/history` - Fetch the full history of a chat session.
   * `DELETE /chat/{id}` - Delete a chat session.
 
 * **Auth**
+  * `GET /auth/config` - Fetch public authentication configuration.
   * `POST /auth/google` - Exchange a Google ID token for a stateless session JWT.
+  * `GET /auth/me` - Check current authentication status and user details.
+  * `POST /auth/logout` - Client-side logout helper.
+
+* **Evaluations**
+  * `GET /eval/summary` - Fetch a summary of recent evaluation logs and metrics.
+  * `POST /eval/run` - Trigger an evaluation run asynchronously.
+  * `POST /eval/tune` - Sweep hyperparameters and tune relevance thresholds.
 
 ---
 
