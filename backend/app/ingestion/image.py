@@ -109,9 +109,9 @@ class ImageLoader(DocumentLoader):
         mime = mimetypes.guess_type(str(path))[0] or "image/jpeg"
         settings = get_settings()
         caption = _fallback_caption(path)
-        gemini_model = (settings.llm_fallback_model or "gemini-1.5-flash").strip()
+        gemini_model = (settings.llm_fallback_model or "gemini-3.8-flash").strip()
         if not gemini_model.startswith("gemini"):
-            gemini_model = "gemini-1.5-flash"
+            gemini_model = "gemini-3.8-flash"
 
         if settings.gemini_api_key:
             try:

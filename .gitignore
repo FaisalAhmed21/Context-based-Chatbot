@@ -26,3 +26,4 @@ Thumbs.db
 *.log
 .pytest_cache/
 .ruff_cache/
+Demo_Preparation_Guide.pdf
