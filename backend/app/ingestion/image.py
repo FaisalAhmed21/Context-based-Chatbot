@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import base64
 import logging
 import mimetypes
 from pathlib import Path
@@ -10,7 +9,6 @@ from pathlib import Path
 import pytesseract
 from PIL import Image
 
-from app.config import get_settings
 from app.types import DocumentLoader, ElementType, RawElement
 
 logger = logging.getLogger(__name__)
