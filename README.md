@@ -2,7 +2,7 @@
 
 Welcome to **OmniCentricBot**, a high-performance, Context-Grounded Multimodal Retrieval-Augmented Generation (RAG) platform. 
 
-This project allows you to build a searchable, multimodal knowledge base by uploading PDFs, images, text files, and web page URLs. The bot answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than guess when the context is insufficient.
+This project allows you to build a searchable knowledge base by uploading PDFs, images, text files, and web page URLs. The bot answers questions **only** using the context provided in your uploaded documents, and is explicitly designed to refuse to answer rather than guess when the context is insufficient.
 
 ## Key Features
 
@@ -10,10 +10,15 @@ This project allows you to build a searchable, multimodal knowledge base by uplo
    Rather than answering from the model's general knowledge, OmniCentricBot uses relevance gating to keep answers tied directly to your documents. If the answer isn't in your documents, the bot explicitly refuses instead of guessing or hallucinating.
 2. **Lightning-Fast Instant Streaming**
    By disabling the secondary groundedness auditor, the chatbot begins streaming its answer to the screen in milliseconds, ensuring a snappy ChatGPT-like user experience while relying on the primary prompt for accuracy.
-3. **Multimodal Capabilities**
-   The platform goes beyond plain text: it parses complex PDF layouts, processes images via Vision LLMs, scrapes live web pages, and indexes them all seamlessly into a single queryable vector store.
-4. **Hybrid Retrieval Pipeline**
-   We combine Dense Vector Search (using local `fastembed` embeddings) with sparse BM25 keyword matching. Results are merged using Reciprocal Rank Fusion (RRF) and then passed through a local Cross-Encoder Reranker to maximize the precision of the retrieved context.
+3. **Advanced Document & Image Parsing**
+   The platform processes files specifically based on their type:
+   - **PDFs:** Parsed into structured Markdown using **PyMuPDF4LLM**.
+   - **Images:** Sent to the free **OCR.space Tesseract API** to extract text, bypassing cloud OS C++ restrictions and requiring absolutely no paid LLM vision tokens.
+4. **Unified Ingestion Flow**
+   Whether the raw text comes from a PDF, an image, or a text file, it all passes through the exact same downstream flow: 
+   - Chunked into logical segments.
+   - Embedded using local **FastEmbed** (`BAAI/bge-small-en-v1.5`).
+   - Indexed instantly into a **Qdrant** Vector Database.
 5. **Interactive Citation UX**
    The frontend doesn't just give you an answer; it shows its sources. Clicking a citation jumps the integrated PDF viewer directly to the exact page and highlights the relevant snippet that informed the answer.
 
@@ -30,7 +35,7 @@ This project allows you to build a searchable, multimodal knowledge base by uplo
 | **Relational DB** | SQLite (Local dev) / PostgreSQL (Production) |
 | **Embeddings** | `BAAI/bge-small-en-v1.5` (via Local FastEmbed) |
 | **LLM Engine** | Groq (`qwen/qwen3.8-27b`) |
-| **Fallback LLM/Vision** | Google Gemini (`gemini-3.8-flash`) |
+| **Image OCR** | OCR.space API (Tesseract Engine 2) |
 | **Document Parsing**| PyMuPDF4LLM |
 
 ---
@@ -44,16 +49,14 @@ The backend runs on FastAPI Cloud.
 - API Base URL: `https://context-based-chatbot.fastapicloud.dev`
 - API Documentation: `https://context-based-chatbot.fastapicloud.dev/docs`
 
-Ensure the following critical backend environment variables are set in your FastAPI Cloud dashboard to ensure instant processing and avoid free-tier rate limits:
+Ensure the following critical backend environment variables are set in your FastAPI Cloud dashboard:
 ```env
 # API Keys
 GROQ_API_KEY=your_groq_key
-GEMINI_API_KEY=your_gemini_key
 
 # Models
 LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
-LLM_FALLBACK_MODEL=gemini-3.8-flash
 
 # Disable the slow groundedness auditor to guarantee instant streaming
 GROUNDEDNESS_ENABLED=false
@@ -111,7 +114,7 @@ The backend exposes a clean, documented REST API. For full schema details, visit
 ### Core Endpoints
 
 * **Documents**
-  * `POST /documents/upload` - Upload and asynchronously ingest a media file (PDF, Image, Video, Audio, Text).
+  * `POST /documents/upload` - Upload and asynchronously ingest a media file (PDF, Image, Text).
   * `POST /documents/from-url` - Scrape and ingest a public webpage.
   * `POST /documents/{id}/reingest` - Re-index a document without full retraining.
   * `GET /documents` - List all documents in the user's knowledge base.
