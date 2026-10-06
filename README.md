@@ -55,11 +55,10 @@ LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
 LLM_FALLBACK_MODEL=gemini-1.5-flash
 
-# Disable slow agentic/LLM loops to guarantee instant streaming & fast upload chunking
-CONTEXTUAL_RETRIEVAL_LLM=false
-GRAPHRAG_ENABLED=false
+# Disable slow agentic/LLM loops to guarantee instant streaming & fast processing
 GROUNDEDNESS_ENABLED=false
 AGENTIC_ENABLED=false
+RERANK_ENABLED=false
 
 # Google Auth
 AUTH_ENABLED=true
