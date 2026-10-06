@@ -40,13 +40,9 @@ class ImageLoader(DocumentLoader):
 
         mime = mimetypes.guess_type(str(path))[0] or "image/jpeg"
         
-        try:
-            caption = _ocr_tesseract_sync(path)
-            if not caption:
-                caption = f"Image file named '{path.name}'. No text detected by Tesseract OCR."
-        except Exception as exc:
-            logger.warning("Tesseract OCR failed: %s", exc)
-            caption = _fallback_caption(path)
+        caption = _ocr_tesseract_sync(path)
+        if not caption:
+            caption = f"Image file named '{path.name}'. No text detected by Tesseract OCR."
 
         logger.info("Image OCR'd (%d chars) for %s", len(caption), path.name)
         return [
