@@ -139,7 +139,7 @@ async def _chat_groq(
     temperature: float = 0.1,
 ) -> str:
     last_err: Exception | None = None
-    for attempt in range(4):
+    for attempt in range(2):
         async with httpx.AsyncClient(timeout=90.0) as client:
             resp = await client.post(
                 "https://api.groq.com/openai/v1/chat/completions",
@@ -192,7 +192,7 @@ async def _chat_gemini(
         f"{model}:generateContent"
     )
     last_err: Exception | None = None
-    for attempt in range(4):
+    for attempt in range(2):
         async with httpx.AsyncClient(timeout=90.0) as client:
             resp = await client.post(url, params={"key": api_key}, json=body)
             if resp.status_code >= 400:

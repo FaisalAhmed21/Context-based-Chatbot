@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     llm_provider: str = "groq"
     llm_fallback_provider: str = "gemini"
-    llm_model: str = "openai/gpt-oss-20b"
+    llm_model: str = "qwen/qwen3.8-27b"
     llm_fallback_model: str = "gemini-3.6-flash"
 
     embedding_provider: str = "fastembed"
@@ -39,13 +39,13 @@ class Settings(BaseSettings):
     # for recall, but relevance_gate also applies a floor for bare rerank passes.
     rerank_threshold: float = -2.0
 
-    groundedness_enabled: bool = True
+    groundedness_enabled: bool = False
 
-    agentic_enabled: bool = True
+    agentic_enabled: bool = False
     hyde_enabled: bool = False
 
-    graphrag_enabled: bool = True
-    contextual_retrieval_llm: bool = True
+    graphrag_enabled: bool = False
+    contextual_retrieval_llm: bool = False
 
     use_langgraph: bool = False
 

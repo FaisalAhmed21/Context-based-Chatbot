@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import uuid
 from typing import Any
@@ -122,64 +123,92 @@ async def send_message(
             import logging
             _log = logging.getLogger(__name__)
 
+            queue: asyncio.Queue[tuple[str, Any]] = asyncio.Queue()
+
+            async def producer():
+                try:
+                    async for item in stream_answer_question(
+                        body.content,
+                        document_ids=doc_ids or None,
+                        document_names=names,
+                        chat_history=history,
+                    ):
+                        await queue.put(("item", item))
+                    await queue.put(("done_signal", None))
+                except Exception as exc:
+                    _log.exception("Exception during chat SSE stream: %s", exc)
+                    await queue.put(("error", str(exc)))
+
+            producer_task = asyncio.create_task(producer())
+
+            # Yield an immediate ping event to flush HTTP/2 headers immediately
+            yield {"event": "ping", "data": "{}"}
+
             gen = None
             try:
-                async for item in stream_answer_question(
-                    body.content,
-                    document_ids=doc_ids or None,
-                    document_names=names,
-                    chat_history=history,
-                ):
-                    if isinstance(item, str):
+                while True:
+                    try:
+                        kind, data = await asyncio.wait_for(queue.get(), timeout=3.0)
+                    except asyncio.TimeoutError:
+                        # Send periodic keepalive ping every 3s so intermediate edge proxies never time out
+                        yield {"event": "ping", "data": "{}"}
+                        continue
+
+                    if kind == "item":
+                        if isinstance(data, str):
+                            yield {
+                                "event": "token",
+                                "data": json.dumps({"token": data}),
+                            }
+                        elif isinstance(data, GenerationResult):
+                            gen = data
+                    elif kind == "error":
                         yield {
-                            "event": "token",
-                            "data": json.dumps({"token": item}),
+                            "event": "done",
+                            "data": json.dumps({
+                                "answer": f"The AI model encountered an error: {data}. Please try again.",
+                                "citations": [],
+                                "refused": True,
+                                "refusal_reason": "stream_error",
+                            }),
                         }
-                    elif isinstance(item, GenerationResult):
-                        gen = item
+                        break
+                    elif kind == "done_signal":
+                        if gen:
+                            payload = {
+                                "answer": gen.answer,
+                                "citations": [c.model_dump() for c in gen.citations],
+                                "refused": gen.refused,
+                                "refusal_reason": gen.refusal_reason,
+                            }
+                            yield {"event": "done", "data": json.dumps(payload)}
 
-                if gen:
-                    payload = {
-                        "answer": gen.answer,
-                        "citations": [c.model_dump() for c in gen.citations],
-                        "refused": gen.refused,
-                        "refusal_reason": gen.refusal_reason,
-                    }
-                    yield {"event": "done", "data": json.dumps(payload)}
-
-                    async with SessionLocal() as persist:
-                        persist.add(
-                            Message(
-                                session_id=session_id,
-                                role="assistant",
-                                content=gen.answer,
-                                citations=[c.model_dump() for c in gen.citations],
-                                refused=gen.refused,
-                                refusal_reason=gen.refusal_reason,
-                            )
-                        )
-                        await persist.commit()
-                else:
-                    yield {
-                        "event": "done",
-                        "data": json.dumps({
-                            "answer": "No response could be generated.",
-                            "citations": [],
-                            "refused": True,
-                            "refusal_reason": "empty_generation",
-                        }),
-                    }
-            except Exception as exc:
-                _log.exception("Exception during chat SSE stream: %s", exc)
-                yield {
-                    "event": "done",
-                    "data": json.dumps({
-                        "answer": f"The AI model encountered an error: {exc}. Please try again.",
-                        "citations": [],
-                        "refused": True,
-                        "refusal_reason": "stream_error",
-                    }),
-                }
+                            async with SessionLocal() as persist:
+                                persist.add(
+                                    Message(
+                                        session_id=session_id,
+                                        role="assistant",
+                                        content=gen.answer,
+                                        citations=[c.model_dump() for c in gen.citations],
+                                        refused=gen.refused,
+                                        refusal_reason=gen.refusal_reason,
+                                    )
+                                )
+                                await persist.commit()
+                        else:
+                            yield {
+                                "event": "done",
+                                "data": json.dumps({
+                                    "answer": "No response could be generated.",
+                                    "citations": [],
+                                    "refused": True,
+                                    "refusal_reason": "empty_generation",
+                                }),
+                            }
+                        break
+            finally:
+                if not producer_task.done():
+                    producer_task.cancel()
 
         return EventSourceResponse(event_gen())
 
