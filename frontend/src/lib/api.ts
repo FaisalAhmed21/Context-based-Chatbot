@@ -186,6 +186,29 @@ export async function streamMessage(
   onToken: (token: string) => void,
   opts?: { documentIds?: string[] },
 ): Promise<{ answer: string; citations: Citation[]; refused: boolean }> {
+  try {
+    return await _streamMessageSSE(sessionId, content, onToken, opts);
+  } catch {
+    // SSE streaming failed (e.g. ERR_HTTP2_PROTOCOL_ERROR on edge proxies).
+    // Fall back to non-streaming request so the user still gets an answer.
+    const msg = await sendMessage(sessionId, content, {
+      documentIds: opts?.documentIds,
+      stream: false,
+    });
+    return {
+      answer: msg.content,
+      citations: msg.citations || [],
+      refused: !!msg.refused,
+    };
+  }
+}
+
+async function _streamMessageSSE(
+  sessionId: string,
+  content: string,
+  onToken: (token: string) => void,
+  opts?: { documentIds?: string[] },
+): Promise<{ answer: string; citations: Citation[]; refused: boolean }> {
   const res = await fetch(`${API_URL}/chat/${sessionId}/message`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders() },

@@ -24,7 +24,7 @@ import {
   reingestDocument,
   setStoredAccessToken,
   signInWithGoogle,
-  streamMessage,
+  sendMessage,
 } from "@/lib/api";
 
 export default function HomePage() {
@@ -244,34 +244,18 @@ export default function HomePage() {
     ]);
 
     try {
-      let firstToken = true;
-      const final = await streamMessage(
-        sessionId,
-        text,
-        (token) => {
-          setMessages((m) => {
-            const copy = [...m];
-            const last = copy[copy.length - 1];
-            if (last?.role === "assistant") {
-              copy[copy.length - 1] = {
-                ...last,
-                content: firstToken ? token : last.content + token,
-              };
-              firstToken = false;
-            }
-            return copy;
-          });
-        },
-        { documentIds: scopeReady },
-      );
+      const reply = await sendMessage(sessionId, text, {
+        documentIds: scopeReady,
+        stream: false,
+      });
 
       setMessages((m) => {
         const copy = [...m];
         copy[copy.length - 1] = {
           role: "assistant",
-          content: final.answer,
-          citations: final.citations,
-          refused: final.refused,
+          content: reply.content,
+          citations: reply.citations,
+          refused: reply.refused,
         };
         return copy;
       });

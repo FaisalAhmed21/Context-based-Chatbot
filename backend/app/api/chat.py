@@ -209,9 +209,6 @@ async def send_message(
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "X-Accel-Buffering": "no",
-                "Connection": "keep-alive",
-                "Content-Type": "text/event-stream; charset=utf-8",
-                "Transfer-Encoding": "chunked",
             },
         )
 
