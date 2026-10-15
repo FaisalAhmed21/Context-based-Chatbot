@@ -209,6 +209,7 @@ export async function streamMessage(
   let buffer = "";
 
   return new Promise(async (resolve, reject) => {
+    let accumulatedAnswer = "";
     try {
       while (true) {
         const { done, value } = await reader.read();
@@ -228,6 +229,7 @@ export async function streamMessage(
             try {
               const data = JSON.parse(dataStr);
               if (currentEvent === "token" && data.token) {
+                accumulatedAnswer += data.token;
                 onToken(data.token);
               } else if (currentEvent === "done") {
                 resolve({
@@ -244,9 +246,20 @@ export async function streamMessage(
         }
       }
 
-      resolve({ answer: "", citations: [], refused: true });
+      // Stream ended without a "done" event — use accumulated tokens if any
+      if (accumulatedAnswer) {
+        resolve({ answer: accumulatedAnswer, citations: [], refused: false });
+      } else {
+        resolve({ answer: "", citations: [], refused: true });
+      }
     } catch (e) {
-      reject(e);
+      // Network error (e.g. ERR_HTTP2_PROTOCOL_ERROR) — if we already
+      // received tokens, treat the accumulated text as the answer.
+      if (accumulatedAnswer) {
+        resolve({ answer: accumulatedAnswer, citations: [], refused: false });
+      } else {
+        reject(e);
+      }
     }
   });
 }

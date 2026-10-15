@@ -207,8 +207,11 @@ async def send_message(
             event_gen(),
             media_type="text/event-stream",
             headers={
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
                 "X-Accel-Buffering": "no",
+                "Connection": "keep-alive",
+                "Content-Type": "text/event-stream; charset=utf-8",
+                "Transfer-Encoding": "chunked",
             },
         )
 
