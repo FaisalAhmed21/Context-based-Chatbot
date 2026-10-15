@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sse_starlette.sse import EventSourceResponse
+from starlette.responses import StreamingResponse
 
 from app.api.auth import AuthUser, get_current_user
 from app.db.models import ChatSession, Document, Message
@@ -142,7 +142,7 @@ async def send_message(
             producer_task = asyncio.create_task(producer())
 
             # Yield an immediate ping event to flush HTTP/2 headers immediately
-            yield {"event": "ping", "data": "{}"}
+            yield ": ping\n\n"
 
             gen = None
             try:
@@ -151,27 +151,22 @@ async def send_message(
                         kind, data = await asyncio.wait_for(queue.get(), timeout=3.0)
                     except asyncio.TimeoutError:
                         # Send periodic keepalive ping every 3s so intermediate edge proxies never time out
-                        yield {"event": "ping", "data": "{}"}
+                        yield ": ping\n\n"
                         continue
 
                     if kind == "item":
                         if isinstance(data, str):
-                            yield {
-                                "event": "token",
-                                "data": json.dumps({"token": data}),
-                            }
+                            yield f"event: token\ndata: {json.dumps({'token': data})}\n\n"
                         elif isinstance(data, GenerationResult):
                             gen = data
                     elif kind == "error":
-                        yield {
-                            "event": "done",
-                            "data": json.dumps({
-                                "answer": f"The AI model encountered an error: {data}. Please try again.",
-                                "citations": [],
-                                "refused": True,
-                                "refusal_reason": "stream_error",
-                            }),
-                        }
+                        err_payload = json.dumps({
+                            "answer": f"The AI model encountered an error: {data}. Please try again.",
+                            "citations": [],
+                            "refused": True,
+                            "refusal_reason": "stream_error",
+                        })
+                        yield f"event: done\ndata: {err_payload}\n\n"
                         break
                     elif kind == "done_signal":
                         if gen:
@@ -181,7 +176,7 @@ async def send_message(
                                 "refused": gen.refused,
                                 "refusal_reason": gen.refusal_reason,
                             }
-                            yield {"event": "done", "data": json.dumps(payload)}
+                            yield f"event: done\ndata: {json.dumps(payload)}\n\n"
 
                             async with SessionLocal() as persist:
                                 persist.add(
@@ -196,21 +191,26 @@ async def send_message(
                                 )
                                 await persist.commit()
                         else:
-                            yield {
-                                "event": "done",
-                                "data": json.dumps({
-                                    "answer": "No response could be generated.",
-                                    "citations": [],
-                                    "refused": True,
-                                    "refusal_reason": "empty_generation",
-                                }),
-                            }
+                            empty_payload = json.dumps({
+                                "answer": "No response could be generated.",
+                                "citations": [],
+                                "refused": True,
+                                "refusal_reason": "empty_generation",
+                            })
+                            yield f"event: done\ndata: {empty_payload}\n\n"
                         break
             finally:
                 if not producer_task.done():
                     producer_task.cancel()
 
-        return EventSourceResponse(event_gen())
+        return StreamingResponse(
+            event_gen(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+            },
+        )
 
     gen = await answer_question(
         body.content,
