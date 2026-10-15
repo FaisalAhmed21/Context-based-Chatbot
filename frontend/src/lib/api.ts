@@ -52,24 +52,29 @@ export type ChatMessage = {
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
+    if (res.status === 401) {
+      clearSession();
+    }
     const text = await res.text();
+    let detailMsg = "";
     try {
       const json = JSON.parse(text) as { detail?: unknown };
-      if (typeof json.detail === "string") throw new Error(json.detail);
-      if (Array.isArray(json.detail)) {
-        const msg = json.detail
+      if (typeof json.detail === "string") detailMsg = json.detail;
+      else if (Array.isArray(json.detail)) {
+        detailMsg = json.detail
           .map((d) =>
             typeof d === "object" && d && "msg" in d
               ? String((d as { msg: string }).msg)
               : JSON.stringify(d),
           )
           .join("; ");
-        throw new Error(msg || text || res.statusText);
       }
-    } catch (e) {
-      if (e instanceof Error && !(e instanceof SyntaxError)) throw e;
+    } catch {
+      // not JSON
     }
-    throw new Error(text || res.statusText);
+    const rawMsg = detailMsg || text || res.statusText;
+    const finalMsg = res.status === 401 && !rawMsg.includes("401") ? `401: ${rawMsg}` : rawMsg;
+    throw new Error(finalMsg);
   }
   return res.json() as Promise<T>;
 }

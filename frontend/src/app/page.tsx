@@ -94,6 +94,13 @@ export default function HomePage() {
           setSignedIn(false);
           return;
         }
+      } else if (cfg?.auth_enabled) {
+        clearSession();
+        setSignedIn(false);
+        setAuthLabel(null);
+        setDocuments([]);
+        setBootError(null);
+        return;
       }
 
       const docs = await listDocuments();
@@ -114,7 +121,8 @@ export default function HomePage() {
       setSessions(pastSessions);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "API unreachable";
-      if (/401|Sign in with Google/i.test(msg)) {
+      if (/401|Sign in with Google|Invalid or expired session|expired|session|unauthorized/i.test(msg)) {
+        clearSession();
         setSignedIn(false);
         setBootError(null);
         return;

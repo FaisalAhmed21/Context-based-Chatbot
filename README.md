@@ -68,7 +68,7 @@ GEMINI_API_KEY=your_gemini_key
 # Models
 LLM_PROVIDER=groq
 LLM_MODEL=qwen/qwen3.8-27b
-LLM_FALLBACK_MODEL=gemini-3.8-flash
+LLM_FALLBACK_MODEL=gemini-3.6-flash
 
 # Qdrant Cloud
 QDRANT_URL=your_qdrant_url

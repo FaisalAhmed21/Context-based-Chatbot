@@ -262,6 +262,9 @@ async def _stream_groq(
                     return
                 try:
                     obj = _json.loads(payload)
+                    if "error" in obj:
+                        err_msg = obj["error"].get("message") if isinstance(obj["error"], dict) else str(obj["error"])
+                        raise RuntimeError(f"Groq stream error: {err_msg}")
                     delta = obj["choices"][0].get("delta") or {}
                     token = delta.get("content")
                     if token:
@@ -318,6 +321,9 @@ async def _stream_gemini(
                     continue
                 try:
                     obj = _json.loads(payload)
+                    if "error" in obj:
+                        err_msg = obj["error"].get("message") if isinstance(obj["error"], dict) else str(obj["error"])
+                        raise RuntimeError(f"Gemini stream error: {err_msg}")
                     parts = obj.get("candidates", [{}])[0].get("content", {}).get("parts", [])
                     for p in parts:
                         text = p.get("text")

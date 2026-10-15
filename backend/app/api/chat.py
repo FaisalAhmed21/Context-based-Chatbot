@@ -119,43 +119,67 @@ async def send_message(
         async def event_gen():
             from app.generation.orchestrator import stream_answer_question
             from app.types import GenerationResult
+            import logging
+            _log = logging.getLogger(__name__)
 
             gen = None
-            async for item in stream_answer_question(
-                body.content,
-                document_ids=doc_ids or None,
-                document_names=names,
-                chat_history=history,
-            ):
-                if isinstance(item, str):
-                    yield {
-                        "event": "token",
-                        "data": json.dumps({"token": item}),
+            try:
+                async for item in stream_answer_question(
+                    body.content,
+                    document_ids=doc_ids or None,
+                    document_names=names,
+                    chat_history=history,
+                ):
+                    if isinstance(item, str):
+                        yield {
+                            "event": "token",
+                            "data": json.dumps({"token": item}),
+                        }
+                    elif isinstance(item, GenerationResult):
+                        gen = item
+
+                if gen:
+                    payload = {
+                        "answer": gen.answer,
+                        "citations": [c.model_dump() for c in gen.citations],
+                        "refused": gen.refused,
+                        "refusal_reason": gen.refusal_reason,
                     }
-                elif isinstance(item, GenerationResult):
-                    gen = item
+                    yield {"event": "done", "data": json.dumps(payload)}
 
-            if gen:
-                payload = {
-                    "answer": gen.answer,
-                    "citations": [c.model_dump() for c in gen.citations],
-                    "refused": gen.refused,
-                    "refusal_reason": gen.refusal_reason,
-                }
-                yield {"event": "done", "data": json.dumps(payload)}
-
-                async with SessionLocal() as persist:
-                    persist.add(
-                        Message(
-                            session_id=session_id,
-                            role="assistant",
-                            content=gen.answer,
-                            citations=[c.model_dump() for c in gen.citations],
-                            refused=gen.refused,
-                            refusal_reason=gen.refusal_reason,
+                    async with SessionLocal() as persist:
+                        persist.add(
+                            Message(
+                                session_id=session_id,
+                                role="assistant",
+                                content=gen.answer,
+                                citations=[c.model_dump() for c in gen.citations],
+                                refused=gen.refused,
+                                refusal_reason=gen.refusal_reason,
+                            )
                         )
-                    )
-                    await persist.commit()
+                        await persist.commit()
+                else:
+                    yield {
+                        "event": "done",
+                        "data": json.dumps({
+                            "answer": "No response could be generated.",
+                            "citations": [],
+                            "refused": True,
+                            "refusal_reason": "empty_generation",
+                        }),
+                    }
+            except Exception as exc:
+                _log.exception("Exception during chat SSE stream: %s", exc)
+                yield {
+                    "event": "done",
+                    "data": json.dumps({
+                        "answer": f"The AI model encountered an error: {exc}. Please try again.",
+                        "citations": [],
+                        "refused": True,
+                        "refusal_reason": "stream_error",
+                    }),
+                }
 
         return EventSourceResponse(event_gen())
 
