@@ -51,10 +51,10 @@ async def rerank(
         return [float(s) for s in scores]
 
     try:
-        scores = await asyncio.to_thread(_run)
+        scores = await asyncio.wait_for(asyncio.to_thread(_run), timeout=3.0)
     except Exception as exc:  
-        logger.warning("Reranker failed (%s) — falling back to fusion order", exc)
-        ranked = sorted(candidates, key=lambda c: c.score, reverse=True)[:top_n]
+        logger.warning("Reranker failed or timed out (%s) — falling back to fusion order", exc)
+        ranked = sorted(candidates, key=lambda c: (c.dense_score if c.dense_score is not None else c.score), reverse=True)[:top_n]
         for c in ranked:
             c.rerank_score = c.dense_score if c.dense_score is not None else c.score
         return ranked

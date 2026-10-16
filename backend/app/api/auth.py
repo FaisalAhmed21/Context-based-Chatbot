@@ -151,7 +151,18 @@ async def get_current_user(
     result = await db.execute(select(User).where(User.id == uid))
     user = result.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=401, detail="User not found — sign in again")
+        email = payload.get("email")
+        user = User(id=uid, email=email)
+        db.add(user)
+        try:
+            await db.commit()
+            await db.refresh(user)
+        except Exception:
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == uid))
+            user = result.scalar_one_or_none()
+            if not user:
+                raise HTTPException(status_code=401, detail="User not found — sign in again")
     return _user_from_payload(payload, user)
 
 async def resolve_token_user(
@@ -175,7 +186,18 @@ async def resolve_token_user(
     result = await db.execute(select(User).where(User.id == uid))
     user = result.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=401, detail="User not found — sign in again")
+        email = payload.get("email")
+        user = User(id=uid, email=email)
+        db.add(user)
+        try:
+            await db.commit()
+            await db.refresh(user)
+        except Exception:
+            await db.rollback()
+            result = await db.execute(select(User).where(User.id == uid))
+            user = result.scalar_one_or_none()
+            if not user:
+                raise HTTPException(status_code=401, detail="User not found — sign in again")
     return _user_from_payload(payload, user)
 
 @router.get(

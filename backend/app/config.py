@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     pdf_parser: str = "auto"
 
     hybrid_enabled: bool = True
-    rerank_enabled: bool = True
+    rerank_enabled: bool = False
     rerank_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
 
     relevance_threshold: float = 0.35
