@@ -121,12 +121,15 @@ export async function getDocumentStatus(id: string): Promise<DocumentOut> {
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  await handle(
-    await fetch(`${API_URL}/documents/${id}`, {
-      method: "DELETE",
-      headers: authHeaders(),
-    }),
-  );
+  const res = await fetch(`${API_URL}/documents/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (res.status === 404) {
+    // Already deleted or gone from server
+    return;
+  }
+  await handle(res);
 }
 
 export async function createSession(documentIds?: string[], title?: string): Promise<{ id: string }> {

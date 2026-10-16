@@ -111,9 +111,15 @@ async def send_message(
     )
     names: dict[str, str] = {}
     if doc_ids:
-        uuids = [uuid.UUID(d) for d in doc_ids]
-        docs = await db.execute(select(Document).where(Document.id.in_(uuids)))
-        names = {str(d.id): d.filename for d in docs.scalars().all()}
+        uuids: list[uuid.UUID] = []
+        for d in doc_ids:
+            try:
+                uuids.append(uuid.UUID(str(d)))
+            except (ValueError, TypeError):
+                pass
+        if uuids:
+            docs = await db.execute(select(Document).where(Document.id.in_(uuids)))
+            names = {str(d.id): d.filename for d in docs.scalars().all()}
 
     if body.stream:
 
@@ -212,12 +218,22 @@ async def send_message(
             },
         )
 
-    gen = await answer_question(
-        body.content,
-        document_ids=doc_ids or None,
-        document_names=names,
-        chat_history=history,
-    )
+    try:
+        gen = await answer_question(
+            body.content,
+            document_ids=doc_ids or None,
+            document_names=names,
+            chat_history=history,
+        )
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception("Error generating answer: %s", exc)
+        from app.types import GenerationResult
+        gen = GenerationResult(
+            answer=f"I encountered a temporary issue while generating an answer: {str(exc)}",
+            refused=True,
+            refusal_reason=str(exc),
+        )
     assistant = Message(
         session_id=session.id,
         role="assistant",

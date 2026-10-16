@@ -235,7 +235,28 @@ export default function HomePage() {
   };
 
   const onSend = async (text: string) => {
-    if (!sessionId || scopeReady.length === 0) return;
+    if (scopeReady.length === 0) return;
+
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      try {
+        const s = await createSession(scopeReady);
+        currentSessionId = s.id;
+        setSessionId(s.id);
+      } catch {
+        setMessages((m) => [
+          ...m,
+          { role: "user", content: text },
+          {
+            role: "assistant",
+            content: "Network error: Unable to create chat session. Please verify your connection or try again.",
+            refused: true,
+          },
+        ]);
+        return;
+      }
+    }
+
     setMessages((m) => [...m, { role: "user", content: text }]);
     setStreaming(true);
     setMessages((m) => [
@@ -244,10 +265,27 @@ export default function HomePage() {
     ]);
 
     try {
-      const reply = await sendMessage(sessionId, text, {
-        documentIds: scopeReady,
-        stream: false,
-      });
+      let reply: ChatMessage;
+      try {
+        reply = await sendMessage(currentSessionId, text, {
+          documentIds: scopeReady,
+          stream: false,
+        });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        // If session expired or was lost after server restart, auto-recover by recreating session
+        if (/Session not found|404/i.test(errMsg)) {
+          const newSession = await createSession(scopeReady);
+          currentSessionId = newSession.id;
+          setSessionId(newSession.id);
+          reply = await sendMessage(newSession.id, text, {
+            documentIds: scopeReady,
+            stream: false,
+          });
+        } else {
+          throw err;
+        }
+      }
 
       setMessages((m) => {
         const copy = [...m];
@@ -412,7 +450,11 @@ export default function HomePage() {
                     setDocuments((prev) => prev.map((d) => (d.id === id ? doc : d)));
                   }}
                   onDelete={async (id) => {
-                    await deleteDocument(id);
+                    try {
+                      await deleteDocument(id);
+                    } catch {
+                      // ignore if document was already deleted on server
+                    }
                     setDocuments((prev) => prev.filter((d) => d.id !== id));
                     setScopeIds((prev) => prev.filter((x) => x !== id));
                     if (viewerId === id) setViewerId(null);

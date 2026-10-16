@@ -87,13 +87,37 @@ app = FastAPI(
 )
 
 settings = get_settings()
+
+allowed_origins = list(
+    set(
+        (settings.cors_origins or [])
+        + [
+            "https://context-based-chatbot.vercel.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
+    )
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins or ["http://localhost:3000"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.vercel\.app|.*\.fastapicloud\.dev)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from starlette.responses import JSONResponse
+
+@app.exception_handler(Exception)
+async def global_exception_handler(_request, exc):
+    import logging
+    logging.getLogger("app.main").exception("Unhandled server exception: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"},
+    )
 
 app.include_router(auth.router)
 app.include_router(documents.router)
@@ -103,4 +127,5 @@ app.include_router(eval_api.router)
 @app.get("/health", tags=["system"], summary="Liveness probe")
 async def health() -> dict[str, str]:
     return {"status": "ok", "service": "grounded-rag"}
+
 
